@@ -1,0 +1,39 @@
+body {
+	margin: 0px;
+	padding: 0px;
+	background-color: #fff;
+	color: #333;
+}
+
+header h1 {
+	text-align: center;
+}
+
+header navigation {
+	padding: 20px;
+	display: block;
+	text-align: center;
+	background-color: #e3e3e3;
+}
+
+header navigation ul {
+	list-style-type: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+header navigation ul li {
+	display: inline;
+}
+
+#content {
+	margin: 50px;
+}
+
+footer {
+	padding: 20px;
+	text-align: center;
+	background-color: #e3e3e3;
+	font-style: italic;
+	font-size: .8em;
+}

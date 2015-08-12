@@ -1,0 +1,26 @@
+<html>
+	<head>
+		{% load staticfiles %}
+		<link rel="stylesheet" type="text/css" href="{% static 'website/style.css' %}" />
+	</head>
+	<body>
+		<header>
+			<h1>Property Management Tools</h1>
+			<navigation>
+				<ul>
+					<li><a href="/">Home</a></li>
+					{% if user.is_authenticated %}
+					<li><a href="/houses/">Houses</a></li>
+					<li>Welcome, {{ user.username }} <a href="{% url 'user_logout' %}">[logout]</a></li>
+					{% else %}
+					<li><a href="{% url 'user_new' %}">[create account]</a> <a href="{% url 'user_login' %}">[login]</a></li>
+					{% endif %}
+				</ul>
+			</navitation>
+		</header>
+		<div id="content">
+			{% block content %}{% endblock %}
+		</div>
+		<footer>Copyright Mumford Property Ltd.</footer>
+	</body>
+</html>
