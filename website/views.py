@@ -129,6 +129,7 @@ def tenancy_new(request):
             tenancy = form.save(commit=False)
             tenancy.owner = request.user
             tenancy.save()
+            form.save_m2m()
             return HttpResponseRedirect(reverse('tenancy', args=(tenancy.id,)))
         else:
             return render(request, 'website/tenancy_new.html', {'form': form})

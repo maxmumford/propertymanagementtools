@@ -1,9 +1,10 @@
 {% extends "website/base.html" %}
+{% load tags %}
 {% block content %}
 	{% if tenancy_list %}
 	    <ul>
 	    {% for tenancy in tenancy_list %}
-	        <li><a href="{% url 'tenancy' tenancy.id %}">{{ tenancy.start_date }}</a></li>
+	        <li><a href="{% url 'tenancy' tenancy.id %}">{{ tenancy.start_date }} - {{ tenancy.end_date }}: {{ tenancy.people.all | joinby:", |name" }}</a></li>
 	    {% endfor %}
 	    </ul>
 	{% else %}

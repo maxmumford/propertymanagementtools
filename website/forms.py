@@ -8,6 +8,8 @@ from django.conf import settings
 
 from models import Property, Room, Person, Tenancy, RentPrice
 
+from datetime import datetime
+
 class PropertyForm(forms.ModelForm):
     class Meta:
         model = Property
@@ -32,9 +34,10 @@ class TenancyForm(forms.ModelForm):
         fields = ['start_date', 'end_date', 'rooms', 'people']
 
     def clean(self):
-        self.is_valid()
+        if not self.is_valid():
+            return
         cleaned_data = super(TenancyForm, self).clean()
-        
+
         # prevent start date from being after end date
         if cleaned_data['start_date'] > cleaned_data['end_date']:
             raise ValidationError('The start date must be before the end date')
@@ -44,7 +47,6 @@ class TenancyForm(forms.ModelForm):
                                   Tenancy.objects.filter(end_date__gte=cleaned_data['start_date'], end_date__lte=cleaned_data['end_date'])
         if len(overlapping_tenancies) > 0:
             raise ValidationError('You already have a tenancy for the period %s to %s' % (overlapping_tenancies[0].start_date.strftime(settings.FRIENDLY_DATE), overlapping_tenancies[0].end_date.strftime(settings.FRIENDLY_DATE)))
-
         return cleaned_data
 
 class RentPriceForm(forms.ModelForm):
