@@ -11,6 +11,9 @@
 					<li><a href="/">Home</a></li>
 					{% if user.is_authenticated %}
 					<li><a href="/properties/">Properties</a></li>
+					<li><a href="/rooms/">Rooms</a></li>
+					<li><a href="/people/">People</a></li>
+					<li><a href="/tenancies/">Tenancies</a></li>
 					<li>Welcome, {{ user.username }} <a href="{% url 'user_logout' %}">[logout]</a></li>
 					{% else %}
 					<li><a href="{% url 'user_new' %}">[create account]</a> <a href="{% url 'user_login' %}">[login]</a></li>

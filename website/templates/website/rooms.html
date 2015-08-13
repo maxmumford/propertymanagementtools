@@ -1,0 +1,13 @@
+{% extends "website/base.html" %}
+{% block content %}
+	{% if room_list %}
+	    <ul>
+	    {% for room in room_list %}
+	        <li><a href="{% url 'room' room.id %}">{{ room.name }}</a> in property <a href="{% url 'property' room.property.id %}">{{ room.property.name }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No Properties.</p>
+	{% endif %}
+	<p><a href="{% url 'room_new' %}">Create Room Property</a></p>
+{% endblock %}

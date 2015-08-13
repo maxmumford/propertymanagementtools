@@ -1,0 +1,13 @@
+{% extends "website/base.html" %}
+{% block content %}
+	{% if people_list %}
+	    <ul>
+	    {% for person in people_list %}
+	        <li><a href="{% url 'person' person.id %}">{{ person.name }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No People.</p>
+	{% endif %}
+	<p><a href="{% url 'person_new' %}">Create Person</a></p>
+{% endblock %}

@@ -15,6 +15,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TIME_ZONE = 'Europe/London'
+FRIENDLY_DATE = '%e %b %Y'
 
 # Users
 LOGIN_URL = 'user_login'

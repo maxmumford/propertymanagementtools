@@ -8,5 +8,11 @@
 	    	<li>{{ room.name }}</li>
 	    	{% endfor %}
 	    </ul>
+	    <form action="{% url 'room_new' %}" method="post">
+	    	<input type="hidden" name="property" value="{{ property.id }}" />
+	    	{% csrf_token %}
+	    	{{ room_form.as_p }}
+	    	<input type="submit" value="Create" />
+	    </form>
 	{% endif %}
 {% endblock %}

@@ -1,0 +1,13 @@
+{% extends "website/base.html" %}
+{% block content %}
+	{% if tenancy_list %}
+	    <ul>
+	    {% for tenancy in tenancy_list %}
+	        <li><a href="{% url 'tenancy' tenancy.id %}">{{ tenancy.start_date }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No Tenancies.</p>
+	{% endif %}
+	<p><a href="{% url 'tenancy_new' %}">Create Tenancy</a></p>
+{% endblock %}
