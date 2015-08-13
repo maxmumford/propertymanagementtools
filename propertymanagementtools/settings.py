@@ -25,12 +25,11 @@ PREMIUM_GROUP_NAME = 'Premium'
 FREE_GROUP_NAME = 'Free'
 
 # bower
-BOWER_INSTALLED_APPS = (
-    'bootstrap#3.3.5',
-    'jquery#2.1.4',
-    'eonasdan-bootstrap-datetimepicker#4.15.35',
-    'moment#2.10.6'
- )
+BOWER_INSTALLED_APPS = ('bootstrap#3.3.5',
+ 'jquery#2.1.4',
+ 'eonasdan-bootstrap-datetimepicker#4.15.35',
+ 'select2#4.0.0',
+ 'moment#2.10.6')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from fields import DatePickerField
 
 TITLE_CHOICES = (
     ('MR', 'Mr.'),
@@ -45,16 +46,16 @@ class Person(models.Model):
 
 class Tenancy(models.Model):
     owner = models.ForeignKey(User, blank=False)
-    start_date = models.DateField(blank=False)
-    end_date = models.DateField(blank=False)
+    start_date = DatePickerField(blank=False)
+    end_date = DatePickerField(blank=False)
     rooms = models.ManyToManyField(Room, blank=False)
     people = models.ManyToManyField(Person, blank=False)
 
 class RentPrice(models.Model):
     owner = models.ForeignKey(User, blank=False)
     tenancy = models.ForeignKey(Tenancy, blank=False)
-    start_date = models.DateField(blank=False)
-    end_date = models.DateField(blank=False)
+    start_date = DatePickerField(blank=False)
+    end_date = DatePickerField(blank=False)
     price = models.FloatField(blank=False)
 
     def __str__(self):

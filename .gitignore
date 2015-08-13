@@ -1,3 +1,4 @@
 propertymanagementtools/database.cnf
 *.pyc
+website/static/bower_components/
 

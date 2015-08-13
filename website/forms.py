@@ -5,6 +5,8 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
 from django.conf import settings
+from django.db.models import fields
+import widgets
 
 from models import Property, Room, Person, Tenancy, RentPrice
 
