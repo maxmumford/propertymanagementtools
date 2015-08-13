@@ -1,29 +1,57 @@
-<html>
-	<head>
-		{% load staticfiles %}
-		<link rel="stylesheet" type="text/css" href="{% static 'website/style.css' %}" />
-	</head>
-	<body>
-		<header>
-			<h1>Property Management Tools</h1>
-			<navigation>
-				<ul>
-					<li><a href="/">Home</a></li>
-					{% if user.is_authenticated %}
-					<li><a href="/properties/">Properties</a></li>
-					<li><a href="/rooms/">Rooms</a></li>
-					<li><a href="/people/">People</a></li>
-					<li><a href="/tenancies/">Tenancies</a></li>
-					<li>Welcome, {{ user.username }} <a href="{% url 'user_logout' %}">[logout]</a></li>
-					{% else %}
-					<li><a href="{% url 'user_new' %}">[create account]</a> <a href="{% url 'user_login' %}">[login]</a></li>
-					{% endif %}
-				</ul>
-			</navitation>
-		</header>
-		<div id="content">
-			{% block content %}{% endblock %}
-		</div>
-		<footer>Copyright Mumford Property Ltd.</footer>
-	</body>
-</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<title>Property Management Tools</title>
+
+	{% load staticfiles %}
+	{% load static %}
+
+	<!-- styling -->
+	<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+	<!-- jquery, bootstrap, moment -->
+	<script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'bower_components/moment/min/moment.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
+
+	<!-- styling: jquery, boostrap -->
+	<link rel="stylesheet" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
+	<link rel="stylesheet" href="{% static 'bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}" />
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	  <![endif]-->
+</head>
+<body>
+	<header>
+		<h1>Property Management Tools</h1>
+		<navigation>
+			<ul>
+				<li><a href="/">Home</a></li>
+				{% if user.is_authenticated %}
+				<li><a href="/properties/">Properties</a></li>
+				<li><a href="/rooms/">Rooms</a></li>
+				<li><a href="/people/">People</a></li>
+				<li><a href="/tenancies/">Tenancies</a></li>
+				<li>Welcome, {{ user.username }} <a href="{% url 'user_logout' %}">[logout]</a></li>
+				{% else %}
+				<li><a href="{% url 'user_new' %}">[create account]</a> <a href="{% url 'user_login' %}">[login]</a></li>
+				{% endif %}
+			</ul>
+		</navigation>
+	</header>
+	<div id="content">
+		{% block content %}{% endblock %}
+	</div>
+	<footer>Copyright Mumford Property Ltd.</footer>
+	
+  </body>
+  </html>

@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."),)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TIME_ZONE = 'Europe/London'
 FRIENDLY_DATE = '%e %b %Y'
@@ -21,6 +23,14 @@ FRIENDLY_DATE = '%e %b %Y'
 LOGIN_URL = 'user_login'
 PREMIUM_GROUP_NAME = 'Premium'
 FREE_GROUP_NAME = 'Free'
+
+# bower
+BOWER_INSTALLED_APPS = (
+    'bootstrap#3.3.5',
+    'jquery#2.1.4',
+    'eonasdan-bootstrap-datetimepicker#4.15.35',
+    'moment#2.10.6'
+ )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -44,6 +54,13 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'website',
+    'djangobower',
+)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'djangobower.finders.BowerFinder',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -94,7 +111,7 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-uk'
 
 TIME_ZONE = 'UTC'
 
@@ -107,5 +124,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
-
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, 'website', 'static')
