@@ -20,14 +20,13 @@ def index(request):
 
 # houses
 @login_required
-@premium_required
 def houses(request):
-    house_list = House.objects.all()
+    house_list = House.objects.filter(owner=request.user)
     return render(request, 'website/houses.html', {'house_list': house_list})
 
 @login_required
 def house(request, house_id):
-    house = get_object_or_404(House, pk=house_id)
+    house = get_object_or_404(House, pk=house_id, owner=request.user)
     return render(request, 'website/house.html', {'house': house})
 
 @login_required
@@ -35,7 +34,9 @@ def house_new(request):
     if request.method == 'POST':
         form = HouseForm(request.POST)
         if form.is_valid():
-            house = form.save()
+            house = form.save(commit=False)
+            house.owner = request.user
+            house.save()
             return HttpResponseRedirect(reverse('house', args=(house.id,)))
     else:
         form = HouseForm()
@@ -51,7 +52,6 @@ def user_new(request):
             return HttpResponseRedirect(reverse('user_login'))
     else:
         form = UserForm()
-
     return render(request, 'website/user_new.html', {'form': form})
 
 def user_get_premium(request):

@@ -2,11 +2,13 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
@@ -57,8 +59,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('start_date', models.DateField()),
                 ('end_date', models.DateField()),
-                ('people', models.ManyToManyField(to='website.Person')),
-                ('rooms', models.ManyToManyField(to='website.Room')),
+                ('people', models.ManyToManyField(to=b'website.Person')),
+                ('rooms', models.ManyToManyField(to=b'website.Room')),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
@@ -96,5 +99,35 @@ class Migration(migrations.Migration):
             model_name='rentprice',
             name='tenancy',
             field=models.ForeignKey(to='website.Tenancy'),
+        ),
+        migrations.AddField(
+            model_name='house',
+            name='owner',
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='person',
+            name='owner',
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='rentprice',
+            name='owner',
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='room',
+            name='owner',
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='transaction',
+            name='owner',
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='person',
+            name='title',
+            field=models.CharField(max_length=35, choices=[(b'MR', b'Mr.'), (b'MRS', b'Mrs.'), (b'MS', b'Ms.')]),
         ),
     ]
