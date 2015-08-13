@@ -10,7 +10,7 @@
 				<ul>
 					<li><a href="/">Home</a></li>
 					{% if user.is_authenticated %}
-					<li><a href="/houses/">Houses</a></li>
+					<li><a href="/properties/">Properties</a></li>
 					<li>Welcome, {{ user.username }} <a href="{% url 'user_logout' %}">[logout]</a></li>
 					{% else %}
 					<li><a href="{% url 'user_new' %}">[create account]</a> <a href="{% url 'user_login' %}">[login]</a></li>

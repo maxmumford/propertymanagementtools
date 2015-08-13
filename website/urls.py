@@ -6,10 +6,10 @@ urlpatterns = [
     # pages
     url(r'^$', views.index, name='index'),
 
-    # houses
-    url(r'^houses/$', views.houses, name='houses'),
-    url(r'^house/(?P<house_id>[0-9]+)/$', views.house, name='house'),
-    url(r'^house/new/$', views.house_new, name='house_new'),
+    # properties
+    url(r'^properties/$', views.properties, name='properties'),
+    url(r'^property/(?P<property_id>[0-9]+)/$', views.property, name='property'),
+    url(r'^property/new/$', views.property_new, name='property_new'),
 
     # users
     url(r'^user/new/$', views.user_new, name='user_new'),

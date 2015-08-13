@@ -4,11 +4,11 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
-from models import House, Tenancy, RentPrice
+from models import Property, Tenancy, RentPrice
 
-class HouseForm(forms.ModelForm):
+class PropertyForm(forms.ModelForm):
     class Meta:
-        model = House
+        model = Property
         fields = ['name']
 
 class TenancyForm(forms.ModelForm):

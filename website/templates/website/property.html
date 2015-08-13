@@ -1,10 +1,10 @@
 {% extends "website/base.html" %}
 {% block content %}
-	{% if house %}
-	    <p><h2>House: {{ house.name }}</h2></p>
+	{% if property %}
+	    <p><h2>Property: {{ property.name }}</h2></p>
 	    <p>Rooms:</p>
 	    <ul>
-	    	{% for room in house.room_set.all %}
+	    	{% for room in property.room_set.all %}
 	    	<li>{{ room.name }}</li>
 	    	{% endfor %}
 	    </ul>

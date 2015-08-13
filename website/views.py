@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from models import House
-from forms import HouseForm, UserForm
+from models import Property
+from forms import PropertyForm, UserForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 
@@ -18,30 +18,30 @@ def premium_required(view_function):
 def index(request):
     return render(request, 'website/index.html')
 
-# houses
+# properties
 @login_required
-def houses(request):
-    house_list = House.objects.filter(owner=request.user)
-    return render(request, 'website/houses.html', {'house_list': house_list})
+def properties(request):
+    property_list = Property.objects.filter(owner=request.user)
+    return render(request, 'website/properties.html', {'property_list': property_list})
 
 @login_required
-def house(request, house_id):
-    house = get_object_or_404(House, pk=house_id, owner=request.user)
-    return render(request, 'website/house.html', {'house': house})
+def property(request, property_id):
+    property = get_object_or_404(Property, pk=property_id, owner=request.user)
+    return render(request, 'website/property.html', {'property': property})
 
 @login_required
-def house_new(request):
+def property_new(request):
     if request.method == 'POST':
-        form = HouseForm(request.POST)
+        form = PropertyForm(request.POST)
         if form.is_valid():
-            house = form.save(commit=False)
-            house.owner = request.user
-            house.save()
-            return HttpResponseRedirect(reverse('house', args=(house.id,)))
+            property = form.save(commit=False)
+            property.owner = request.user
+            property.save()
+            return HttpResponseRedirect(reverse('property', args=(property.id,)))
     else:
-        form = HouseForm()
+        form = PropertyForm()
 
-    return render(request, 'website/house_new.html', {'form': form})
+    return render(request, 'website/property_new.html', {'form': form})
 
 # users
 def user_new(request):

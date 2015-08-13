@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='House',
+            name='Property',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=35)),
@@ -50,7 +50,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=35)),
-                ('house', models.ForeignKey(to='website.House')),
+                ('property', models.ForeignKey(to='website.Property')),
             ],
         ),
         migrations.CreateModel(
@@ -87,8 +87,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='transaction',
-            name='house',
-            field=models.ForeignKey(to='website.House'),
+            name='property',
+            field=models.ForeignKey(to='website.Property'),
         ),
         migrations.AddField(
             model_name='transaction',
@@ -101,7 +101,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(to='website.Tenancy'),
         ),
         migrations.AddField(
-            model_name='house',
+            model_name='property',
             name='owner',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
         ),

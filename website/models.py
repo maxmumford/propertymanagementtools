@@ -7,7 +7,7 @@ TITLE_CHOICES = (
     ('MS', 'Ms.'),
 )
 
-class House(models.Model):
+class Property(models.Model):
     owner = models.ForeignKey(User, blank=False)
     name = models.CharField(max_length=35, blank=False)
     address_line_1 = models.CharField(max_length=45)
@@ -23,7 +23,7 @@ class House(models.Model):
 class Room(models.Model):
     owner = models.ForeignKey(User, blank=False)
     name = models.CharField(max_length=35, blank=False)
-    house = models.ForeignKey(House, blank=False)
+    property = models.ForeignKey(Property, blank=False)
 
     def __str__(self):
         return self.name
@@ -71,7 +71,7 @@ class Transaction(models.Model):
     datetime = models.DateTimeField(blank=False)
     amount = models.FloatField(blank=False)
     tenancy = models.ForeignKey(Tenancy)
-    house = models.ForeignKey(House, blank=False)
+    property = models.ForeignKey(Property, blank=False)
     category = models.ForeignKey(TransactionCategory)
 
     def __str__(self):
