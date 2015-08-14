@@ -48,8 +48,12 @@ class Tenancy(models.Model):
     owner = models.ForeignKey(User, blank=False)
     start_date = DatePickerField(blank=False)
     end_date = DatePickerField(blank=False)
+    property = models.ForeignKey(Property, blank=False)
     rooms = models.ManyToManyField(Room, blank=False)
     people = models.ManyToManyField(Person, blank=False)
+
+    def __str__(self):
+        return self.people.all()[0].first_name + ' in ' + self.property.name
 
 class RentPrice(models.Model):
     owner = models.ForeignKey(User, blank=False)
@@ -62,15 +66,16 @@ class RentPrice(models.Model):
         return self.price
 
 class TransactionCategory(models.Model):
-    name = models.CharField(max_length=35, blank=False)
-    hmrc_code = models.CharField(max_length=2)
+    name = models.CharField(max_length=35, blank=False, unique=True)
+    hmrc_code = models.CharField(max_length=2, unique=True)
+    description = models.CharField(max_length=120, blank=False)
 
     def __str__(self):
         return self.name
 
 class Transaction(models.Model):
     owner = models.ForeignKey(User, blank=False)
-    datetime = models.DateTimeField(blank=False)
+    date = DatePickerField(blank=False)
     amount = models.FloatField(blank=False)
     tenancy = models.ForeignKey(Tenancy)
     property = models.ForeignKey(Property, blank=False)

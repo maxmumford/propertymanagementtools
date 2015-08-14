@@ -1,4 +1,12 @@
 {% extends "website/base.html" %}
 {% block content %}
-	INDEX
+	{% if tenancy_summaries %}
+	    <ul>
+	    {% for tenancy_summary in tenancy_summaries %}
+	        <li>{{ tenancy_summary }}</li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No tenancies.</p>
+	{% endif %}
 {% endblock %}

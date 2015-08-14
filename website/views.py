@@ -1,11 +1,14 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from models import Property, Room, Person, Tenancy, RentPrice
-from forms import PropertyForm, RoomForm, PersonForm, UserForm, TenancyForm, RentPriceForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import generic
 from django.conf import settings
+
+from models import Property, Room, Person, Tenancy, RentPrice, Transaction
+from forms import PropertyForm, RoomForm, PersonForm, UserForm, TenancyForm, RentPriceForm, TransactionForm
+
+from dashboard import Dashboard
 
 def premium_required(view_function):
     def _wrapped_view_function(request, *args, **kwargs): 
@@ -17,7 +20,13 @@ def premium_required(view_function):
 
 # pages
 def index(request):
-    return render(request, 'website/index.html')
+    if request.user.is_authenticated():
+        tenancies = Tenancy.objects.filter(owner=request.user)
+        transactions = Transaction.objects.filter(owner=request.user)
+        dashboard = Dashboard(tenancies, transactions)
+        return render(request, 'website/index.html', {'tenancy_summaries': dashboard.get_data()})
+    else:
+        return render(request, 'website/index_anonymous.html')
 
 # properties
 @login_required
@@ -115,7 +124,6 @@ class tenancies(generic.ListView):
     context_object_name = 'tenancy_list'
 
     def get_queryset(self):
-        """Return the last five published questions."""
         return Tenancy.objects.filter(owner=self.request.user)
 
 class tenancy(generic.DetailView):
@@ -147,6 +155,34 @@ def tenancy_new(request):
     else:
         form = TenancyForm()
     return render(request, 'website/tenancy_new.html', {'form': form})
+
+# transactions
+class transactions(generic.ListView):
+    template_name = 'website/transactions.html'
+    context_object_name = 'transaction_list'
+
+    def get_queryset(self):
+        return Transaction.objects.filter(owner=self.request.user)
+
+class transaction(generic.DetailView):
+    model = Transaction
+    template_name = 'website/transaction.html'
+
+@login_required
+def transaction_new(request):
+    if request.method == 'POST':
+        form = TransactionForm(request.POST, request=request)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.owner = request.user
+            transaction.save()
+            form.save_m2m()
+            return HttpResponseRedirect(reverse('transaction', args=(transaction.id,)))
+        else:
+            return render(request, 'website/transaction_new.html', {'form': form})
+    else:
+        form = TransactionForm()
+    return render(request, 'website/transaction_new.html', {'form': form})
 
 # users
 def user_new(request):

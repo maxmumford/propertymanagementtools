@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db.models import fields
 import widgets
 
-from models import Property, Room, Person, Tenancy, RentPrice
+from models import Property, Room, Person, Tenancy, RentPrice, Transaction
 
 from datetime import datetime
 
@@ -46,7 +46,7 @@ class TenancyForm(CustomModelForm):
 
     class Meta:
         model = Tenancy
-        fields = ['start_date', 'end_date', 'rooms', 'people']
+        fields = ['start_date', 'end_date', 'rooms', 'people', 'property']
 
     def clean(self):
         if not self.is_valid():
@@ -92,6 +92,11 @@ class RentPriceForm(CustomModelForm):
         if cleaned_data['start_date'] > cleaned_data['end_date']:
             raise ValidationError('Start date is after end date')
         return cleaned_data
+
+class TransactionForm(CustomModelForm):
+    class Meta:
+        model = Transaction
+        fields = ['date', 'amount', 'tenancy', 'property', 'category']
 
 class UserForm(forms.Form):
     first_name = forms.CharField(max_length=30)

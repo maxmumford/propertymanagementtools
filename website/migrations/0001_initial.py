@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.conf import settings
-
+import website
 
 class Migration(migrations.Migration):
 
@@ -40,8 +40,8 @@ class Migration(migrations.Migration):
             name='RentPrice',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
+                ('start_date', website.fields.DatePickerField()),
+                ('end_date', website.fields.DatePickerField()),
                 ('price', models.FloatField()),
             ],
         ),
@@ -57,8 +57,8 @@ class Migration(migrations.Migration):
             name='Tenancy',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
+                ('start_date', website.fields.DatePickerField()),
+                ('end_date', website.fields.DatePickerField()),
                 ('people', models.ManyToManyField(to=b'website.Person')),
                 ('rooms', models.ManyToManyField(to=b'website.Room')),
                 ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
             name='Transaction',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('datetime', models.DateTimeField()),
+                ('date', website.fields.DatePickerField()),
                 ('amount', models.FloatField()),
             ],
         ),
@@ -76,8 +76,9 @@ class Migration(migrations.Migration):
             name='TransactionCategory',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=35)),
-                ('hmrc_code', models.CharField(max_length=2)),
+                ('name', models.CharField(unique=True, max_length=35,)),
+                ('hmrc_code', models.CharField(unique=True, max_length=2)),
+                ('description', models.CharField(max_length=120)),
             ],
         ),
         migrations.AddField(
@@ -129,5 +130,10 @@ class Migration(migrations.Migration):
             model_name='person',
             name='title',
             field=models.CharField(max_length=35, choices=[(b'MR', b'Mr.'), (b'MRS', b'Mrs.'), (b'MS', b'Ms.')]),
+        ),
+        migrations.AddField(
+            model_name='tenancy',
+            name='property',
+            field=models.ForeignKey(default='', to='website.Property'),
         ),
     ]
