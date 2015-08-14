@@ -1,4 +1,6 @@
 {% extends "website/base.html" %}
 {% block content %}
-<h1>{{ tenancy.start_date }}</h1>
+<h1>{{ tenancy.start_date }} - {{ tenancy.end_date }}</h1>
+<p>Rooms: {% for room in tenancy.rooms.all %}{{ room.name }}, {% endfor %}</p>
+<p>People: {% for person in tenancy.people.all %}{{ person.name }}, {% endfor %}</p>
 {% endblock %}

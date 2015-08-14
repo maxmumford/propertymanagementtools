@@ -36,7 +36,7 @@ def property(request, property_id):
 @login_required
 def property_new(request):
     if request.method == 'POST':
-        form = PropertyForm(request.POST)
+        form = PropertyForm(request.POST, request=request)
         if form.is_valid():
             prop = form.save(commit=False)
             prop.owner = request.user
@@ -66,7 +66,7 @@ def room_new(request):
     Create a new room and redirect to it's property
     """
     if request.method == 'POST':
-        form = RoomForm(request.POST)
+        form = RoomForm(request.POST, request=request)
         if form.is_valid():
             # check property is owned by user
             if form.cleaned_data['property'].owner == request.user:
@@ -97,7 +97,7 @@ def person_new(request):
     Create a new person and redirect to people
     """
     if request.method == 'POST':
-        form = PersonForm(request.POST)
+        form = PersonForm(request.POST, request=request)
         if form.is_valid():
             person = form.save(commit=False)
             person.owner = request.user
@@ -122,9 +122,10 @@ class tenancy(generic.DetailView):
     model = Tenancy
     template_name = 'website/tenancy.html'
 
+@login_required
 def tenancy_new(request):
     if request.method == 'POST':
-        form = TenancyForm(request.POST)
+        form = TenancyForm(request.POST, request=request)
         if form.is_valid():
             tenancy = form.save(commit=False)
             tenancy.owner = request.user
@@ -140,7 +141,7 @@ def tenancy_new(request):
 # users
 def user_new(request):
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = UserForm(request.POST, request=request)
         if form.is_valid():
             user = form.save()
             return HttpResponseRedirect(reverse('user_login'))
