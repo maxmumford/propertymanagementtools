@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from models import Property, Room, Person, Tenancy
-from forms import PropertyForm, RoomForm, PersonForm, UserForm, TenancyForm
+from models import Property, Room, Person, Tenancy, RentPrice
+from forms import PropertyForm, RoomForm, PersonForm, UserForm, TenancyForm, RentPriceForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import generic
 from django.conf import settings
@@ -131,6 +131,16 @@ def tenancy_new(request):
             tenancy.owner = request.user
             tenancy.save()
             form.save_m2m()
+
+            # create corresponding RentPrice record
+            rent_price_form = RentPriceForm({'tenancy': tenancy.id, 'start_date': tenancy.start_date, 'end_date': tenancy.end_date, 'price': request.POST['price']})
+            if rent_price_form.is_valid():
+                rent_price = rent_price_form.save(commit=False)
+                rent_price.owner = request.user
+                rent_price.save()
+            else:
+                raise Exception("Could not create RentPrice record: " + str(rent_price_form.errors))
+
             return HttpResponseRedirect(reverse('tenancy', args=(tenancy.id,)))
         else:
             return render(request, 'website/tenancy_new.html', {'form': form})

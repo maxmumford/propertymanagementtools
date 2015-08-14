@@ -42,6 +42,8 @@ def date_spans_overlap(start_date_A, end_date_A, start_date_B, end_date_B):
     return start_date_A <= end_date_B and end_date_A >= start_date_B
 
 class TenancyForm(CustomModelForm):
+    price = forms.FloatField()
+
     class Meta:
         model = Tenancy
         fields = ['start_date', 'end_date', 'rooms', 'people']
