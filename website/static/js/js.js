@@ -1,7 +1,4 @@
-$(function () {
-	// date picker
-	$('.datepicker').datetimepicker({format: 'DD/MM/YYYY'});
-
+$(document).ready(function () {
 	// select2
 	$('select').select2();
 });
