@@ -5,99 +5,124 @@ import calendar
 
 # set decimal arithmatic context
 context = getcontext()
-#context.prec = 2
 context.rounding=ROUND_HALF_UP
 
 class Dashboard():
-	"""
-	Calculates the figures for the user's dashboard.
-	Instantiate with the appropriate data, then call calculate
-	Access the data with get_data. It returns a dict containing
-	calculation results which can be passed directly to the index template
-	"""
+    """
+    Calculates the figures for the user's dashboard.
+    Access the data with get_data. It returns a dict containing
+    calculation results which can be passed directly to the index template
+    """
 
-	# data sources
-	tenancies = None
-	transactions = None
+    # data sources
+    tenancies = None
+    transactions = None
 
-	def __init__(self, tenancies, transactions):
-		self.tenancies = tenancies
-		self.transactions = transactions
-		self.tenancy_summaries = []
-		self._calculate_tenancy_summaries()
+    def __init__(self, tenancies, transactions):
+        self.tenancies = tenancies
+        self.transactions = transactions
+        self.tenancy_summaries = []
+        self._calculate_tenancy_summaries()
 
-	def get_data(self):
-		return self.tenancy_summaries
+    def get_data(self):
+        return self.tenancy_summaries
 
-	def _calculate_tenancy_summaries(self):
-		for tenancy in self.tenancies:
-			total_paid = Decimal()
-			total_charged = Decimal()
-
-			# CALCULATE TOTAL CHARGED
-			rent_prices_for_tenancy = tenancy.rentprice_set.all()
-			start_date = tenancy.start_date
-			end_date = tenancy.end_date
-			now = datetime.date(datetime.now())
-			if end_date > now:
-				end_date = now
-
-			# calculate total charged month by month
-			date = start_date
-			rent_prices_for_tenancy.order_by('start_date')
-
-			for rent_price in rent_prices_for_tenancy:
-				# set the end date to the rent_price end, or todays date, which ever is earlier
-				rent_price_end = rent_price.end_date
-				if now < rent_price_end:
-					rent_price_end = now
-				while date < rent_price_end:
-					# work out rent per day and how many days to charge for this month
-					days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
-					rent_per_day = Decimal(str(rent_price.price)) / Decimal(str(days_in_month))
-					if date.year == rent_price_end.year and date.month == rent_price_end.month:
-						# calculating last month of tenancy
-						chargable_days = rent_price_end.day
-					elif date.day != 1:
-						# calculating first month of tenancy
-						chargable_days = days_in_month - date.day
-					else:
-						chargable_days = days_in_month
-					rent_for_month = chargable_days * rent_per_day
-					total_charged += rent_for_month
-					# set the date to the first of the next month
-					date = date + relativedelta(months=1)
-					date = date.replace(day=1)
-			# check if end date of tenancy is not the end of the month
-			
-			# CALCULATE TOTAL PAID
-			transactions_for_tenancy = self.transactions.filter(tenancy=tenancy.id)
-			for transaction in transactions_for_tenancy:
-				total_paid += Decimal(transaction.amount)
-
-			# create and cache TenancySummary
-			self.tenancy_summaries.append(TenancySummary(tenancy, charged=total_charged, paid=total_paid))
+    def _calculate_tenancy_summaries(self):
+        for tenancy in self.tenancies:
+            transactions = self.transactions.filter(tenancy=tenancy.id)
+            tenancy_summary = TenancySummary(tenancy, transactions)
+            tenancy_summary.calculate()
+            self.tenancy_summaries.append(tenancy_summary)
 
 class TenancySummary():
-	""" represents the financial summary for a tenancy """
 
-	def __init__(self, tenancy, charged=0, paid=0):
-		self.tenancy = tenancy
-		self._total_charged = charged
-		self._total_paid = paid
+    def __init__(self, tenancy, transactions):
+        self._total_charged = Decimal('0')
+        self._total_paid = Decimal('0')
+        self.date = tenancy.start_date
+        self.tenancy = tenancy
+        self.transactions = transactions
+        self.rent_prices = tenancy.rentprice_set.all()
 
-	@property
-	def arrears(self):
-		return self.total_charged - self.total_paid
+    @property
+    def arrears(self):
+        return (self.total_charged - self.total_paid).quantize(Decimal('1.00'))
 
-	@property
-	def total_charged(self):
-		return self._total_charged.quantize(Decimal('1.00'))
+    @property
+    def total_charged(self):
+        return self._total_charged.quantize(Decimal('1.00'))
 
-	@property
-	def total_paid(self):
-		return self._total_paid.quantize(Decimal('1.00'))
+    @property
+    def total_paid(self):
+        return self._total_paid.quantize(Decimal('1.00'))
 
-	def __str__(self):
-		return str(self.tenancy) + ": Total charged is %(charged)s with %(paid)s having been paid, leaving %(arrears)s of arrears." % \
-						{'charged': self.total_charged, 'paid': self.total_paid, 'arrears': self.arrears}
+    def __str__(self):
+        return str(self.tenancy) + ": Total charged is %(charged)s with %(paid)s having been paid, leaving %(arrears)s of arrears." % \
+                        {'charged': self.total_charged, 'paid': self.total_paid, 'arrears': self.arrears}
+
+    def calculate(self):
+        self._calculate_total_charged()
+        self._calculate_total_paid()
+
+    def _calculate_total_charged(self):
+        # loop from month to month totting up the total_charged until the last month of the tenancy has been processed
+        while not self._all_months_processed():
+            chargable_days_for_month = self._get_chargable_days_for_month(self.date, self.tenancy.end_date)
+
+            for day in range(1, chargable_days_for_month + 1):
+                daily_rent = self._get_rent_for_day(self.date.replace(day=day))
+                self._total_charged += Decimal(str(daily_rent))
+
+            self._next_month()
+
+    def _calculate_total_paid(self):
+        # calculate total payments made by the tenant
+        for transaction in self.transactions:
+            self._total_paid += Decimal(transaction.amount)
+
+    def _get_rent_for_day(self, date):
+        # calculate the rent for the day of date based on rent_price records
+        rent_for_day = None
+        days_in_month = self._get_days_in_month(date)
+        for rent_price in self.rent_prices:
+            if date >= rent_price.start_date and date <= rent_price.end_date:
+                # day falls within this rent_price
+                rent_for_day = Decimal(str(rent_price.price)) / Decimal(str(days_in_month))
+                break
+        if rent_for_day == None:
+            raise InvalidDataError("Could not find a rent price for the date %s" % str(date))
+        return rent_for_day
+
+    def _get_chargable_days_for_month(self, date, end_date):
+        # calculate the number of chargable days
+        chargable_days = 0
+        if date.year == self.tenancy.end_date.year and date.month == self.tenancy.end_date.month:
+            # last month of the tenancy
+            chargable_days = self.tenancy.end_date.day - (date.day - 1)
+        else:
+            # either first month or middle month
+            chargable_days = self._get_days_in_month(date) - (date.day - 1)
+        return chargable_days
+
+    def _get_days_in_month(self, date):
+        # return number of days in the month
+        return calendar.monthrange(date.year, date.month)[1]
+
+    def _all_months_processed(self):
+        # stop processing tenancy when self.date is in the same month as the tenancy end date, or now, whichever is sooner
+        end_month = self.tenancy.end_date.month
+        end_year = self.tenancy.end_date.year
+        now = datetime.now()
+        if now.date() < self.tenancy.end_date:
+            end_month = now.month
+            end_year = now.year
+        res = (self.date.year <= end_year and self.date.month <= end_month) == False
+        return res
+
+    def _next_month(self):
+        # increments self.date to be the first of the next month
+        self.date = self.date + relativedelta(months=1)
+        self.date = self.date.replace(day=1)
+
+class InvalidDataError(Exception):
+    pass
