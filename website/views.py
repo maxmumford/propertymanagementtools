@@ -8,7 +8,7 @@ from django.conf import settings
 from models import Property, Room, Person, Tenancy, RentPrice, Transaction
 from forms import PropertyForm, RoomForm, PersonForm, UserForm, TenancyForm, RentPriceForm, TransactionForm
 
-from dashboard import Dashboard
+from .dashboard.dashboard import Dashboard
 
 def premium_required(view_function):
     def _wrapped_view_function(request, *args, **kwargs): 

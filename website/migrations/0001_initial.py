@@ -126,6 +126,12 @@ class Migration(migrations.Migration):
             name='owner',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
         ),
+        migrations.AddField(
+            model_name='transaction',
+            name='person',
+            field=models.ForeignKey(default='', to='website.Person'),
+            preserve_default=False,
+        ),
         migrations.AlterField(
             model_name='person',
             name='title',
@@ -134,6 +140,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tenancy',
             name='property',
-            field=models.ForeignKey(default='', to='website.Property'),
+            field=models.ForeignKey(to='website.Property'),
         ),
     ]
