@@ -39,6 +39,9 @@ class TenancySummary():
     def __init__(self, tenancy, transactions):
         self._total_charged = Decimal('0')
         self._total_paid = Decimal('0')
+
+        self._arrears_total_charged = Decimal('0')
+
         self.date = tenancy.start_date
         self.tenancy = tenancy
         self.transactions = transactions
@@ -46,7 +49,7 @@ class TenancySummary():
 
     @property
     def arrears(self):
-        return (self.total_charged - self.total_paid).quantize(Decimal('1.00'))
+        return (self._arrears_total_charged - self._total_paid).quantize(Decimal('1.00'))
 
     @property
     def total_charged(self):
@@ -67,8 +70,13 @@ class TenancySummary():
     def _calculate_total_charged(self):
         # loop from month to month totting up the total_charged until the last month of the tenancy has been processed
         while not self._all_months_processed():
-            chargable_days_for_month = self._get_chargable_days_for_month(self.date, self.tenancy.end_date)
+            # if we are calculating the last month, save the total paid and charged figures for arrears
+            # because the tenant has until the end of the month to pay them
+            if self._is_last_month():
+                self._arrears_total_charged = self._total_charged
 
+            # calculate month
+            chargable_days_for_month = self._get_chargable_days_for_month(self.date, self.tenancy.end_date)
             for day in range(1, chargable_days_for_month + 1):
                 daily_rent = self._get_rent_for_day(self.date.replace(day=day))
                 self._total_charged += Decimal(str(daily_rent))
@@ -108,16 +116,23 @@ class TenancySummary():
         # return number of days in the month
         return calendar.monthrange(date.year, date.month)[1]
 
-    def _all_months_processed(self):
-        # stop processing tenancy when self.date is in the same month as the tenancy end date, or now, whichever is sooner
+    def _get_end_year_month(self):
         end_month = self.tenancy.end_date.month
         end_year = self.tenancy.end_date.year
         now = datetime.now()
         if now.date() < self.tenancy.end_date:
             end_month = now.month
             end_year = now.year
-        res = (self.date.year <= end_year and self.date.month <= end_month) == False
-        return res
+        return (end_year, end_month)
+
+    def _all_months_processed(self):
+        # stop processing tenancy when self.date is in the same month as the tenancy end date, or now, whichever is sooner
+        end_year, end_month = self._get_end_year_month()
+        return (self.date.year <= end_year and self.date.month <= end_month) == False
+
+    def _is_last_month(self):
+        end_year, end_month = self._get_end_year_month()
+        return self.date.year == end_year and self.date.month == end_month
 
     def _next_month(self):
         # increments self.date to be the first of the next month
