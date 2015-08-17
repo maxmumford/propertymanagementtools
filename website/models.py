@@ -17,6 +17,7 @@ class Property(models.Model):
     county = models.CharField(max_length=35)
     postcode = models.CharField(max_length=35)
     country = models.CharField(max_length=35)
+    purchase_date = DatePickerField()
 
     def __str__(self):
         return self.name
@@ -81,6 +82,7 @@ class Transaction(models.Model):
     tenancy = models.ForeignKey(Tenancy)
     person = models.ForeignKey(Person)
     category = models.ForeignKey(TransactionCategory)
+    description = models.CharField(max_length=120, blank=False)
 
     def __str__(self):
         return self.amount

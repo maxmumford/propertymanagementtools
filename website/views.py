@@ -21,10 +21,12 @@ def premium_required(view_function):
 # pages
 def index(request):
     if request.user.is_authenticated():
+        properties = Property.objects.filter(owner=request.user)
         tenancies = Tenancy.objects.filter(owner=request.user)
         transactions = Transaction.objects.filter(owner=request.user)
-        dashboard = Dashboard(tenancies, transactions)
-        return render(request, 'website/index.html', {'tenancy_summaries': dashboard.get_data()})
+        dashboard = Dashboard(properties, tenancies, transactions)
+        tenancy_summaries, property_summaries = dashboard.get_data()
+        return render(request, 'website/index.html', {'tenancy_summaries': tenancy_summaries, 'property_summaries': property_summaries})
     else:
         return render(request, 'website/index_anonymous.html')
 

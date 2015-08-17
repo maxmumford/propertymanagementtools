@@ -13,16 +13,14 @@ class TenancySummary():
         self._total_charged = Decimal('0')
         self._total_paid = Decimal('0')
 
-        self._arrears_total_charged = Decimal('0')
-
         self.date = tenancy.start_date
         self.tenancy = tenancy
         self.transactions = transactions
         self.rent_prices = tenancy.rentprice_set.all()
 
     @property
-    def arrears(self):
-        return (self._arrears_total_charged - self._total_paid).quantize(Decimal('1.00'))
+    def balance(self):
+        return (self._total_paid - self._total_charged).quantize(Decimal('1.00'))
 
     @property
     def total_charged(self):
@@ -33,8 +31,8 @@ class TenancySummary():
         return self._total_paid.quantize(Decimal('1.00'))
 
     def __str__(self):
-        return str(self.tenancy) + ": Total charged is %(charged)s with %(paid)s having been paid, leaving %(arrears)s of arrears." % \
-                        {'charged': self.total_charged, 'paid': self.total_paid, 'arrears': self.arrears}
+        return str(self.tenancy) + ": Total charged is %(charged)s with %(paid)s having been paid, leaving a balance of %(balance)s." % \
+                        {'charged': self.total_charged, 'paid': self.total_paid, 'balance': self.balance}
 
     def calculate(self):
         self._calculate_total_charged()
@@ -43,11 +41,6 @@ class TenancySummary():
     def _calculate_total_charged(self):
         # loop from month to month totting up the total_charged until the last month of the tenancy has been processed
         while not self._all_months_processed():
-            # if we are calculating the last month, save the total paid and charged figures for arrears
-            # because the tenant has until the end of the month to pay them
-            if self._is_last_month():
-                self._arrears_total_charged = self._total_charged
-
             # calculate month
             chargable_days_for_month = self._get_chargable_days_for_month(self.date, self.tenancy.end_date)
             for day in range(1, chargable_days_for_month + 1):
@@ -102,10 +95,6 @@ class TenancySummary():
         # stop processing tenancy when self.date is in the same month as the tenancy end date, or now, whichever is sooner
         end_year, end_month = self._get_end_year_month()
         return (self.date.year <= end_year and self.date.month <= end_month) == False
-
-    def _is_last_month(self):
-        end_year, end_month = self._get_end_year_month()
-        return self.date.year == end_year and self.date.month == end_month
 
     def _next_month(self):
         # increments self.date to be the first of the next month
