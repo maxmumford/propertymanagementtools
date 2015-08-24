@@ -5,10 +5,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import generic
 from django.conf import settings
 
-from models import Property, Room, Person, Tenancy, RentPrice, Transaction
-from forms import PropertyForm, RoomForm, PersonForm, UserForm, TenancyForm, RentPriceForm, TransactionForm
-
-from .dashboard.dashboard import Dashboard
+from models import Building, Room, Person, Tenancy, RentPrice, Transaction
+from forms import BuildingForm, RoomForm, PersonForm, UserForm, TenancyForm, RentPriceForm, TransactionForm
 
 def premium_required(view_function):
     def _wrapped_view_function(request, *args, **kwargs): 
@@ -21,44 +19,40 @@ def premium_required(view_function):
 # pages
 def index(request):
     if request.user.is_authenticated():
-        properties = Property.objects.filter(owner=request.user)
-        tenancies = Tenancy.objects.filter(owner=request.user)
-        transactions = Transaction.objects.filter(owner=request.user)
-        dashboard = Dashboard(properties, tenancies, transactions)
-        tenancy_summaries, property_summaries = dashboard.get_data()
-        return render(request, 'website/index.html', {'tenancy_summaries': tenancy_summaries, 'property_summaries': property_summaries})
+        buildings = Building.objects.filter(owner=request.user)
+        return render(request, 'website/index.html', {'buildings': buildings})
     else:
         return render(request, 'website/index_anonymous.html')
 
 # properties
 @login_required
-def properties(request):
-    property_list = Property.objects.filter(owner=request.user)
-    return render(request, 'website/properties.html', {'property_list': property_list})
+def buildings(request):
+    building_list = Building.objects.filter(owner=request.user)
+    return render(request, 'website/buildings.html', {'building_list': building_list})
 
 @login_required
-def property(request, property_id):
-    prop = get_object_or_404(Property, pk=property_id, owner=request.user)
+def building(request, building_id):
+    building = get_object_or_404(Building, pk=building_id, owner=request.user)
 
-    # get room form and prepopulate property_id field as the current property
-    room_form = RoomForm(initial={'property': property_id})
-    return render(request, 'website/property.html', {'property': prop, 'room_form': room_form})
+    # get room form and prepopulate building_id field as the current building
+    room_form = RoomForm(initial={'building': building_id})
+    return render(request, 'website/building.html', {'building': building, 'room_form': room_form})
 
 @login_required
-def property_new(request):
+def building_new(request):
     if request.method == 'POST':
-        form = PropertyForm(request.POST, request=request)
+        form = BuildingForm(request.POST, request=request)
         if form.is_valid():
-            prop = form.save(commit=False)
-            prop.owner = request.user
-            prop.save()
-            return HttpResponseRedirect(reverse('property', args=(prop.id,)))
+            building = form.save(commit=False)
+            building.owner = request.user
+            building.save()
+            return HttpResponseRedirect(reverse('building', args=(building.id,)))
         else:
-            return render(request, 'website/property_new.html', {'form': form})
+            return render(request, 'website/building_new.html', {'form': form})
     else:
-        form = PropertyForm()
+        form = BuildingForm()
 
-    return render(request, 'website/property_new.html', {'form': form})
+    return render(request, 'website/building_new.html', {'form': form})
 
 # rooms
 @login_required
@@ -74,17 +68,17 @@ def room(request, room_id):
 @login_required
 def room_new(request):
     """
-    Create a new room and redirect to it's property
+    Create a new room and redirect to it's building
     """
     if request.method == 'POST':
         form = RoomForm(request.POST, request=request)
         if form.is_valid():
-            # check property is owned by user
-            if form.cleaned_data['property'].owner == request.user:
+            # check building is owned by user
+            if form.cleaned_data['building'].owner == request.user:
                 room = form.save(commit=False)
                 room.owner = request.user
                 room.save()
-                return HttpResponseRedirect(reverse('property', args=(form.cleaned_data['property'].id,)))
+                return HttpResponseRedirect(reverse('building', args=(form.cleaned_data['building'].id,)))
         else:
             return render(request, 'website/room_new.html', {'form': form})
     else:

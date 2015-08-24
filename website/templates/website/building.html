@@ -1,15 +1,15 @@
 {% extends "website/base.html" %}
 {% block content %}
-	{% if property %}
-	    <p><h2>Property: {{ property.name }}</h2></p>
+	{% if building %}
+	    <p><h2>Property: {{ building.name }}</h2></p>
 	    <p>Rooms:</p>
 	    <ul>
-	    	{% for room in property.room_set.all %}
+	    	{% for room in building.room_set.all %}
 	    	<li>{{ room.name }}</li>
 	    	{% endfor %}
 	    </ul>
 	    <form action="{% url 'room_new' %}" method="post">
-	    	<input type="hidden" name="property" value="{{ property.id }}" />
+	    	<input type="hidden" name="building" value="{{ building.id }}" />
 	    	{% csrf_token %}
 	    	{{ room_form.as_p }}
 	    	<input type="submit" value="Create" />

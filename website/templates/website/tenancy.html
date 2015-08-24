@@ -4,4 +4,23 @@
 <p>Rooms: {% for room in tenancy.rooms.all %}{{ room.name }}, {% endfor %}</p>
 <p>People: {% for person in tenancy.people.all %}{{ person.name }}, {% endfor %}</p>
 <p>Price[s]: {% for rent_price in tenancy.rentprice_set.all %}{{ rent_price.price }}, {% endfor %}</p>
+<h3>Invoices</h3>
+<table>
+	<tr>
+		<th>Start Date</th>
+		<th>End Date</th>
+		<th>Amount Due</th>
+		<th>Amounts Paid</th>
+		<th>Balance</th>
+	</tr>
+	{% for invoice in tenancy.invoices %}
+	<tr>
+		<td>{{ invoice.date }}</td>
+		<td>{{ invoice.end_date }}</td>
+		<td>{{ invoice.amount_due }}</td>
+		<td>{{ invoice.amount_paid }}</td>
+		<td>{{ invoice.balance }}</td>
+	</tr>
+	{% endfor %}
+</table>
 {% endblock %}

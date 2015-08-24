@@ -1,0 +1,9 @@
+<div class="building_summary">
+	<h2>{{ building.name }}</h2>
+	<p>
+		Rooms: {{ building.rooms_full_count }} / {{ building.rooms_count }}<br />
+		Arrears: {{ building.tenancy_balance }}<br />
+		Finances: £{{ building.profit_per_month }}pm, £{{ building.profit_per_year }}pa<br />
+		Notices: {{ building.notices }}
+	</p>
+</div>

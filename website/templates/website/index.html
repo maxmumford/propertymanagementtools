@@ -1,22 +1,10 @@
 {% extends "website/base.html" %}
 {% block content %}
-	{% if tenancy_summaries %}
-	<h1>Tenancies:</h1>
-	    <ul>
-	    {% for tenancy_summary in tenancy_summaries %}
-	        <li>{{ tenancy_summary }}</li>
-	    {% endfor %}
-	    </ul>
-	{% else %}
-	    <p>No tenancies.</p>
-	{% endif %}
-	{% if property_summaries %}
+	{% if buildings %}
 	<h1>Properties:</h1>
-	    <ul>
-	    {% for property_summary in property_summaries %}
-	        <li>{{ property_summary }}</li>
-	    {% endfor %}
-	    </ul>
+    {% for building in buildings %}
+        {% include "website/snippets/building_summary.html" with building=building %}
+    {% endfor %}
 	{% else %}
 	    <p>No Properties.</p>
 	{% endif %}

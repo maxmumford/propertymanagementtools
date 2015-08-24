@@ -8,9 +8,9 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
 
     # properties
-    url(r'^properties/$', views.properties, name='properties'),
-    url(r'^property/(?P<property_id>[0-9]+)/$', views.property, name='property'),
-    url(r'^property/new/$', views.property_new, name='property_new'),
+    url(r'^properties/$', views.buildings, name='buildings'),
+    url(r'^property/(?P<building_id>[0-9]+)/$', views.building, name='building'),
+    url(r'^property/new/$', views.building_new, name='building_new'),
 
     # rooms
     url(r'^rooms/$', views.rooms, name='rooms'),
@@ -20,7 +20,7 @@ urlpatterns = [
     # people
     url(r'^people/$', views.people, name='people'),
     url(r'^person/(?P<person_id>[0-9]+)/$', views.person, name='person'),
-    url(r'^person/new/$', views.person_new, name='person_new'),    
+    url(r'^person/new/$', views.person_new, name='person_new'),
 
     # tenancies
     url(r'^tenancies/$', login_required(views.tenancies.as_view()), name='tenancies'),

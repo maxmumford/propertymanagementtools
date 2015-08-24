@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db.models import fields
 import widgets
 
-from models import Property, Room, Person, Tenancy, RentPrice, Transaction
+from models import Building, Room, Person, Tenancy, RentPrice, Transaction
 
 from datetime import datetime
 
@@ -18,17 +18,17 @@ class CustomModelForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super(CustomModelForm, self).__init__(*args, **kwargs)
 
-class PropertyForm(CustomModelForm):
+class BuildingForm(CustomModelForm):
     class Meta:
-        model = Property
-        fields = ['name']
+        model = Building
+        fields = ['name', 'purchase_date']
 
 class RoomForm(CustomModelForm):
     class Meta:
         model = Room
-        fields = ['name', 'property']
+        fields = ['name', 'building']
         widgets = {
-            'property': HiddenInput(),
+            'building': HiddenInput(),
         }
 
 class PersonForm(CustomModelForm):
@@ -46,7 +46,7 @@ class TenancyForm(CustomModelForm):
 
     class Meta:
         model = Tenancy
-        fields = ['start_date', 'end_date', 'rooms', 'people', 'property']
+        fields = ['start_date', 'end_date', 'rooms', 'people', 'building']
 
     def clean(self):
         if not self.is_valid():
@@ -96,7 +96,7 @@ class RentPriceForm(CustomModelForm):
 class TransactionForm(CustomModelForm):
     class Meta:
         model = Transaction
-        fields = ['date', 'amount', 'tenancy', 'property', 'category']
+        fields = ['date', 'amount', 'tenancy', 'building', 'category']
 
 class UserForm(forms.Form):
     first_name = forms.CharField(max_length=30)

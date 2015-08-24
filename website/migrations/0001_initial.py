@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Property',
+            name='Building',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=35)),
@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=35)),
-                ('property', models.ForeignKey(to='website.Property')),
+                ('building', models.ForeignKey(to='website.Building')),
             ],
         ),
         migrations.CreateModel(
@@ -90,8 +90,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='transaction',
-            name='property',
-            field=models.ForeignKey(to='website.Property'),
+            name='building',
+            field=models.ForeignKey(to='website.Building'),
         ),
         migrations.AddField(
             model_name='transaction',
@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(to='website.Tenancy'),
         ),
         migrations.AddField(
-            model_name='property',
+            model_name='building',
             name='owner',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
         ),
@@ -141,7 +141,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='tenancy',
-            name='property',
-            field=models.ForeignKey(to='website.Property'),
+            name='building',
+            field=models.ForeignKey(to='website.Building'),
         ),
     ]

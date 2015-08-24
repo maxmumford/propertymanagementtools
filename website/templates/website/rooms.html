@@ -3,7 +3,7 @@
 	{% if room_list %}
 	    <ul>
 	    {% for room in room_list %}
-	        <li><a href="{% url 'room' room.id %}">{{ room.name }}</a> in property <a href="{% url 'property' room.property.id %}">{{ room.property.name }}</a></li>
+	        <li><a href="{% url 'room' room.id %}">{{ room.name }}</a> in building <a href="{% url 'building' room.building.id %}">{{ room.building.name }}</a></li>
 	    {% endfor %}
 	    </ul>
 	{% else %}

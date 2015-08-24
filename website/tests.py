@@ -4,16 +4,16 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
-from models import Property
+from models import Building
 from forms import TenancyForm, RentPriceForm
-from views import property_new, room_new
+from views import building_new, room_new
 
 import datetime
 
 TEST_VALUES = {
     'user_username': 'tom',
     'other_user_username': 'sam',
-    'property_name': 'Manor Road',
+    'building_name': 'Manor Road',
     'room_name': '1',
 }
 
@@ -37,15 +37,15 @@ class TestCaseStandardUser(TestCase):
         except User.DoesNotExist:
             self.other_user = User.objects.create_user(username=TEST_VALUES['other_user_username'], email='sam@example.com', password='mega_secret_password')
 
-class PropertyMethodTests(TestCaseStandardUser):
+class BuildingMethodTests(TestCaseStandardUser):
 
-    def test_create_property(self):
-        """ Create a standard Property """
-        request = self.factory.post(reverse('property_new'), {'name': TEST_VALUES['property_name']})
+    def test_create_building(self):
+        """ Create a standard Building """
+        request = self.factory.post(reverse('building_new'), {'name': TEST_VALUES['building_name']})
         request.user = self.user
-        response = property_new(request)
-        prop = Property.objects.filter(name=TEST_VALUES['property_name'])
-        self.assertEqual(len(prop), 1)
+        response = building_new(request)
+        building = Building.objects.filter(name=TEST_VALUES['building_name'])
+        self.assertEqual(len(building), 1)
 
 class TenancyMethodTests(TestCaseStandardUser):
 

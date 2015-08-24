@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from datetime import datetime
 
-from models import Property, Room, Person, Tenancy, RentPrice, Transaction, TransactionCategory
+from models import Building, Room, Person, Tenancy, RentPrice, Transaction, TransactionCategory
 
 
 SAMPLE_DATA = {
@@ -11,7 +11,7 @@ SAMPLE_DATA = {
     'SUPERUSER_PASSWORD': 'superpass',
     'SUPERUSER_EMAIL': 'super@example.com',
 
-    'PROPERTIES': [
+    'BUILDINGS': [
         {'name': 'Osbourne', 'purchase_date': '2014-01-01', 'rooms': ['1', '2']},
         {'name': 'Alderman', 'purchase_date': '2015-01-01', 'rooms': ['1', '2']},
     ],
@@ -23,9 +23,9 @@ SAMPLE_DATA = {
         {'first_name': 'Samantha', 'last_name': 'Oxford', 'email': 'samanthaoxford@example.com', 'phone': '07777229994'},
     ],
 
-    # WARNING! (dates, property) must be unique because of use of get_or_create
+    # WARNING! (dates, building) must be unique because of use of get_or_create
     'TENANCIES': [
-        {'start_date': '2014-01-01', 'end_date': '2014-12-31', 'property_name': 'Osbourne', 'room_names': ['1', '2'], 'people_emails': ['amandajohnson@example.com'], 
+        {'start_date': '2014-01-01', 'end_date': '2014-12-31', 'building_name': 'Osbourne', 'room_names': ['1', '2'], 'people_emails': ['amandajohnson@example.com'], 
         'rent_prices':
         [
             {'start_date': '2014-01-01', 'end_date': '2014-06-30', 'price': '600'},
@@ -51,7 +51,7 @@ SAMPLE_DATA = {
             {'category_hmrc_code': '20', 'date': '2014-12-01', 'amount': 650},
         ]},
 
-        {'start_date': '2015-02-01', 'end_date': '2015-12-31', 'property_name': 'Osbourne', 'room_names': ['1'], 'people_emails': ['amandajohnson@example.com'], 
+        {'start_date': '2015-02-01', 'end_date': '2015-12-31', 'building_name': 'Osbourne', 'room_names': ['1'], 'people_emails': ['amandajohnson@example.com'], 
         'rent_prices':
         [
             {'start_date': '2015-02-01', 'end_date': '2015-12-31', 'price': '350'},
@@ -73,7 +73,7 @@ SAMPLE_DATA = {
             {'category_hmrc_code': '20', 'date': '2015-12-01', 'amount': 350},
         ]},
 
-        {'start_date': '2015-01-01', 'end_date': '2015-12-31', 'property_name': 'Osbourne', 'room_names': ['2'], 'people_emails': ['johnsmith@example.com'], 
+        {'start_date': '2015-01-01', 'end_date': '2015-12-31', 'building_name': 'Osbourne', 'room_names': ['2'], 'people_emails': ['johnsmith@example.com'], 
         'rent_prices':
         [
             {'start_date': '2015-01-01', 'end_date': '2015-12-31', 'price': '350'},
@@ -95,7 +95,7 @@ SAMPLE_DATA = {
             {'category_hmrc_code': '20', 'date': '2015-12-01', 'amount': 350},
         ]},
 
-        {'start_date': '2015-01-01', 'end_date': '2015-12-31', 'property_name': 'Alderman', 'room_names': ['1', '2'], 'people_emails': ['davidoxford@example.com', 'samanthaoxford'], 
+        {'start_date': '2015-01-01', 'end_date': '2015-12-31', 'building_name': 'Alderman', 'room_names': ['1', '2'], 'people_emails': ['davidoxford@example.com', 'samanthaoxford'], 
         'rent_prices':
         [
             {'start_date': '2015-01-01', 'end_date': '2015-06-30', 'price': '600'},
@@ -134,15 +134,15 @@ def generate_sampledata(options):
         if 'Duplicate' not in str(e):
             raise
 
-    # create properties and rooms
-    def create_property_and_rooms(prop):
-        rooms = prop.pop('rooms')
-        prop, created = Property.objects.get_or_create(owner_id=owner.id, **prop)
+    # create building and rooms
+    def create_building_and_rooms(building):
+        rooms = building.pop('rooms')
+        building, created = Building.objects.get_or_create(owner_id=owner.id, **building)
         for room_name in rooms:
-            Room.objects.get_or_create(name=room_name, property=prop, owner_id=owner.id)
+            Room.objects.get_or_create(name=room_name, building=building, owner_id=owner.id)
     
-    for prop in SAMPLE_DATA['PROPERTIES']:
-        create_property_and_rooms(prop)
+    for building in SAMPLE_DATA['BUILDINGS']:
+        create_building_and_rooms(building)
 
     # create people
     def create_person(field_values_dictionary):
@@ -173,12 +173,12 @@ def generate_sampledata(options):
             date = datetime.strptime(transaction['date'], '%Y-%m-%d').date()
             now = datetime.now().date()
             if date.year < now.year or date.year == now.year and date.month <= now.month:
-                Transaction.objects.get_or_create(category_id=rent_transaction_category.id, property_id=tenancy.property.id, 
+                Transaction.objects.get_or_create(category_id=rent_transaction_category.id, building_id=tenancy.building.id, 
                                                 tenancy_id=tenancy.id, owner_id=owner.id, person_id=people[0].id, **transaction)
 
     for tenancy in SAMPLE_DATA['TENANCIES']:
-        tenancy['property_id'] = Property.objects.get(name=tenancy.pop('property_name')).id
-        tenancy['rooms'] = Room.objects.filter(name__in=tenancy.pop('room_names'), property_id=tenancy['property_id'])
+        tenancy['building_id'] = Building.objects.get(name=tenancy.pop('building_name')).id
+        tenancy['rooms'] = Room.objects.filter(name__in=tenancy.pop('room_names'), building_id=tenancy['building_id'])
         tenancy['people'] = Person.objects.filter(email__in=tenancy.pop('people_emails'))
         tenancy['owner_id'] = owner.id
         create_tenancy_and_rent_prices_and_transactions(tenancy)

@@ -1,0 +1,13 @@
+{% extends "website/base.html" %}
+{% block content %}
+	{% if building_list %}
+	    <ul>
+	    {% for building in building_list %}
+	        <li><a href="{% url 'building' building.id %}">{{ building.name }}</a></li>
+	    {% endfor %}
+	    </ul>
+	{% else %}
+	    <p>No Properties.</p>
+	{% endif %}
+	<p><a href="{% url 'building_new' %}">Create New Property</a></p>
+{% endblock %}
