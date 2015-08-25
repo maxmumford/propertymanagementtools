@@ -5,11 +5,11 @@ $(document).ready(function () {
 	// chaining selects
 	$.each($('.chained'), function(propertyName, selectElement){
 		selectElement = $(selectElement);
-		var start_disabled = selectElement.data('chainDisable');
+		var start_disabled = selectElement.data('chainStartDisabled');
 		var autoselect = selectElement.data('chainAutoselect');
 
 		// disable chained element
-		if (start_disabled == true){
+		if (start_disabled != false){
 			selectElement.select2('enable', false);
 		}
 

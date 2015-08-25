@@ -116,7 +116,7 @@ class TransactionForm(CustomModelForm):
         fields = ['date', 'amount', 'description', 'tenancy', 'building', 'person', 'category']
         widgets = {
             'building': forms.widgets.SelectMultiple(attrs={'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/buildings_for_tenancy', \
-                                                            'data-chain-autoselect': 'true', 'data-chain-disable': 'false'}),
+                                                            'data-chain-autoselect': 'true', 'data-chain-start-disabled': 'false'}),
         }
 
 class UserForm(forms.Form):
