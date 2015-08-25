@@ -1,3 +1,0 @@
-[submodule "django-smart-selects"]
-	path = django-smart-selects
-	url = git@github.com:digi604/django-smart-selects.git
