@@ -7,7 +7,6 @@ from django.forms import HiddenInput
 from django.conf import settings
 from django.db.models import fields
 import widgets
-
 from models import Building, Room, Person, Tenancy, RentPrice, Transaction
 
 from datetime import datetime
@@ -31,6 +30,17 @@ class RoomForm(CustomModelForm):
             'building': HiddenInput(),
         }
 
+    def clean(self):
+        if not self.is_valid():
+            return
+        cleaned_data = super(RoomForm, self).clean()
+
+        # don't allow creation of room for a building that user does not own
+        if not cleaned_data['building'].owner == self.request.user:
+            raise ValidationError("You cannot create a room for a building that you do not own")
+
+        return cleaned_data
+
 class PersonForm(CustomModelForm):
     class Meta:
         model = Person
@@ -46,7 +56,10 @@ class TenancyForm(CustomModelForm):
 
     class Meta:
         model = Tenancy
-        fields = ['start_date', 'end_date', 'rooms', 'people', 'building']
+        fields = ['start_date', 'end_date', 'building', 'rooms', 'people']
+        widgets = {
+            'rooms': forms.widgets.SelectMultiple(attrs={'class': 'chained', 'data-chain-from': 'building', 'data-chain-endpoint': '/chaining/rooms_for_building'}),
+        }
 
     def clean(self):
         if not self.is_valid():
@@ -100,7 +113,11 @@ class RentPriceForm(CustomModelForm):
 class TransactionForm(CustomModelForm):
     class Meta:
         model = Transaction
-        fields = ['date', 'amount', 'tenancy', 'building', 'person', 'category']
+        fields = ['date', 'amount', 'description', 'tenancy', 'building', 'person', 'category']
+        widgets = {
+            'building': forms.widgets.SelectMultiple(attrs={'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/buildings_for_tenancy', \
+                                                            'data-chain-autoselect': 'true', 'data-chain-disable': 'false'}),
+        }
 
 class UserForm(forms.Form):
     first_name = forms.CharField(max_length=30)

@@ -4,6 +4,7 @@
 * django-bower: pip install django-bower
 * mysqldb: apt-get install python2.7-mysqldb
 * python-dateutil: apt-get install python-dateutil
+* sudo apt-get install python-simplejson
 
 # Installation
 * copy propertymanagementtools/database.conf.sample to propertymanagementtools/database.conf and put in values for your db instance

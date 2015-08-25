@@ -1,7 +1,9 @@
+import calendar
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from decimal import *
-import calendar
+
+from django.conf import settings
 
 # set decimal arithmatic context
 context = getcontext()
@@ -170,9 +172,9 @@ class Tenancy(models.Model):
         return self.transaction_set.filter(category__hmrc_code='20')
 
     def __str__(self):
-        return self.people.all()[0].first_name + ' in ' + self.building.name + ' (' + str(self.start_date) + ' : ' + str(self.end_date) + ')' + \
-                ": Total charged is %(charged)s with %(paid)s having been paid, leaving a balance of %(balance)s." % \
-                        {'charged': self.total_charged, 'paid': self.total_paid, 'balance': self.balance}
+        return '%(people)s in %(building)s from %(from)s to %(to)s' % \
+                    {'people': ', '.join([person.first_name for person in self.people.all()]), 'building': self.building.name, \
+                    'from': datetime.strftime(self.start_date, settings.FRIENDLY_DATE), 'to': datetime.strftime(self.end_date, settings.FRIENDLY_DATE)}
 
     @property
     def invoices(self):
@@ -315,9 +317,11 @@ class Transaction(models.Model):
 
 # Signals
 def tenancy_calculate_on_init(instance, **kwargs):
-    instance.calculate()
+    if instance.id:
+        instance.calculate()
 models.signals.post_init.connect(tenancy_calculate_on_init, Tenancy)
 
 def building_calculate_on_init(instance, **kwargs):
-    instance.calculate()
+    if instance.id:
+        instance.calculate()
 models.signals.post_init.connect(building_calculate_on_init, Building)

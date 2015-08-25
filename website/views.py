@@ -1,5 +1,7 @@
+import simplejson
+
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import generic
@@ -183,7 +185,7 @@ def transaction_new(request):
 # users
 def user_new(request):
     if request.method == 'POST':
-        form = UserForm(request.POST, request=request)
+        form = UserForm(request.POST)
         if form.is_valid():
             user = form.save()
             return HttpResponseRedirect(reverse('user_login'))
@@ -195,3 +197,28 @@ def user_new(request):
 
 def user_get_premium(request):
     return render(request, 'website/user_get_premium.html')
+
+# json
+def rooms_for_building(request):
+    building_id = request.GET.get('building_id')
+    if not building_id:
+        raise Http404
+    rooms = Room.objects.filter(owner=request.user, building=building_id)
+    rooms_list = {}
+    for room in rooms:
+        rooms_list[room.id] = str(room)
+    return HttpResponse(simplejson.dumps(rooms_list), content_type="application/json")
+
+def buildings_for_tenancy(request):
+    tenancy_id = request.GET.get('tenancy_id')
+    if not tenancy_id:
+        raise Http404
+    if tenancy_id == '0':
+        buildings = Building.objects.filter(owner=request.user).all()
+        building_list = {}
+        for building in buildings:
+            building_list[building.id] = str(building)
+    else:
+        tenancy = Tenancy.objects.get(owner=request.user, id=tenancy_id)
+        building_list = {tenancy.building.id: str(tenancy.building)}
+    return HttpResponse(simplejson.dumps(building_list), content_type="application/json")
