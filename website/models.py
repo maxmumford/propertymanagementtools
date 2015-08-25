@@ -35,8 +35,6 @@ class Building(models.Model):
     country = models.CharField(max_length=35)
     purchase_date = DatePickerField()
 
-    _calculated = False
-
     def __str__(self):
         return self.name
 
@@ -51,13 +49,11 @@ class Building(models.Model):
     @property
     @currency
     def tenancy_balance(self):
-        self._ensure_calculated()
         return sum([tenancy.balance for tenancy in self.tenancy_set.all() if tenancy.active == True])
 
     @property
     @currency
     def profit_per_day(self):
-        self._ensure_calculated()
         now = datetime.now().date()
         days_passed = (now - self.purchase_date).days
         return self._total_income / days_passed
@@ -74,25 +70,21 @@ class Building(models.Model):
 
     @property
     def notices(self):
-        self._ensure_calculated()
         return self._notices
 
     @property
     @currency
     def balance(self):
-        self._ensure_calculated()
         return (self._total_income - self._total_expense).quantize(Decimal('1.00'))
 
     @property
     @currency
     def total_income(self):
-        self._ensure_calculated()
         return self._total_income.quantize(Decimal('1.00'))
 
     @property
     @currency
     def total_expense(self):
-        self._ensure_calculated()
         return self._total_expense.quantize(Decimal('1.00'))
 
     def __str__(self):
@@ -106,11 +98,6 @@ class Building(models.Model):
         self._calculate_total_income()
         self._calculate_total_expense()
         self._create_notices()
-        self._calculated = True
-
-    def _ensure_calculated(self):
-        if not self._calculated:
-            self.calculate()
 
     def _calculate_total_income(self):
         self._total_income += Decimal(str(sum([transaction.amount for transaction in self.transaction_set.all() if transaction.category.hmrc_code == '20'])))
@@ -156,8 +143,6 @@ class Tenancy(models.Model):
     rooms = models.ManyToManyField(Room, blank=False)
     people = models.ManyToManyField(Person, blank=False)
 
-    _calculated = False
-
     # tenancy summation properties
     @property
     def active(self):
@@ -166,22 +151,18 @@ class Tenancy(models.Model):
 
     @property
     def balance(self):
-        self._ensure_calculated()
         return (self.total_paid - self.total_charged + sum(self._surplus.values())).quantize(Decimal('1.00'))
 
     @property
     def total_charged(self):
-        self._ensure_calculated()
         return Decimal(str(sum([invoice.amount_due for invoice in self._invoices]))).quantize(Decimal('1.00'))
 
     @property
     def total_paid(self):
-        self._ensure_calculated()
         return Decimal(str(sum([invoice.amount_paid for invoice in self._invoices]))).quantize(Decimal('1.00'))
 
     @property
     def surplus(self):
-        self._ensure_calculated()
         return sum([surplus.value() for surplus in self._surplus]).quantize(Decimal('1.00'))
 
     @property
@@ -189,14 +170,12 @@ class Tenancy(models.Model):
         return self.transaction_set.filter(category__hmrc_code='20')
 
     def __str__(self):
-        self._ensure_calculated()
         return self.people.all()[0].first_name + ' in ' + self.building.name + ' (' + str(self.start_date) + ' : ' + str(self.end_date) + ')' + \
                 ": Total charged is %(charged)s with %(paid)s having been paid, leaving a balance of %(balance)s." % \
                         {'charged': self.total_charged, 'paid': self.total_paid, 'balance': self.balance}
 
     @property
     def invoices(self):
-        self._ensure_calculated()
         return self._invoices
 
     # tenancy summation calculation
@@ -207,11 +186,6 @@ class Tenancy(models.Model):
 
         self._generate_invoices()
         self._allocate_invoice_payments()
-        self._calculated = True
-
-    def _ensure_calculated(self):
-        if not self._calculated:
-            self.calculate()
 
     def _generate_invoices(self):
         # go from month to month creating invoices
@@ -338,3 +312,12 @@ class Transaction(models.Model):
 
     def __str__(self):
         return str(self.amount)
+
+# Signals
+def tenancy_calculate_on_init(instance, **kwargs):
+    instance.calculate()
+models.signals.post_init.connect(tenancy_calculate_on_init, Tenancy)
+
+def building_calculate_on_init(instance, **kwargs):
+    instance.calculate()
+models.signals.post_init.connect(building_calculate_on_init, Building)
