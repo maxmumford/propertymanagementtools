@@ -79,6 +79,10 @@ class TenancyForm(CustomModelForm):
         if any(conflicts):
             raise ValidationError('One of the tenants has an overlapping tenancy for this timespan')
 
+        # prevent start date from being before building purchase date
+        if start < cleaned_data['building'].purchase_date:
+            raise ValidationError('The tenancy cannot start before the building purchase date (%s)' % cleaned_data['building'].purchase_date.strftime(settings.FRIENDLY_DATE))
+
         return cleaned_data
 
 class RentPriceForm(CustomModelForm):
@@ -96,7 +100,7 @@ class RentPriceForm(CustomModelForm):
 class TransactionForm(CustomModelForm):
     class Meta:
         model = Transaction
-        fields = ['date', 'amount', 'tenancy', 'building', 'category']
+        fields = ['date', 'amount', 'tenancy', 'building', 'person', 'category']
 
 class UserForm(forms.Form):
     first_name = forms.CharField(max_length=30)

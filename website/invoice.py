@@ -12,6 +12,10 @@ class Invoice():
 	def make_payment(self, transaction, amount):
 		self._payments[transaction] = Decimal(str(amount))
 
+	def __str__(self):
+		return "%(date)s to %(end_date)s: %(due)s due, %(paid)s paid, %(balance)s balance from %(payment_no)s payments" % \
+				{'date': self.date, 'end_date': self.end_date, 'due': self.amount_due, 'paid': self.amount_paid, 'balance': self.balance, 'payment_no': len(self._payments.keys())}
+
 	@property
 	def date(self):
 		return self._date

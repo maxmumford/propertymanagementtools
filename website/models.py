@@ -36,7 +36,6 @@ class Building(models.Model):
     purchase_date = DatePickerField()
 
     _calculated = False
-    _notices = None
 
     def __str__(self):
         return self.name
@@ -53,27 +52,30 @@ class Building(models.Model):
     @currency
     def tenancy_balance(self):
         self._ensure_calculated()
-        return sum([tenancy.balance for tenancy in self.tenancy_set.all()])
+        return sum([tenancy.balance for tenancy in self.tenancy_set.all() if tenancy.active == True])
+
+    @property
+    @currency
+    def profit_per_day(self):
+        self._ensure_calculated()
+        now = datetime.now().date()
+        days_passed = (now - self.purchase_date).days
+        return self._total_income / days_passed
 
     @property
     @currency
     def profit_per_month(self):
-        self._ensure_calculated()
-        now = datetime.now().date()
-        days_passed = (now - self.purchase_date).days
-        whole_months_passed = days_passed / 30
-        profit_per_month = self._total_income / whole_months_passed
-        return profit_per_month
+        return self.profit_per_day * 31
 
     @property
     @currency
     def profit_per_year(self):
-        return self.profit_per_month * 12
+        return self.profit_per_day * 365
 
     @property
     def notices(self):
         self._ensure_calculated()
-        return self._notices or ''
+        return self._notices
 
     @property
     @currency
@@ -99,18 +101,16 @@ class Building(models.Model):
     def calculate(self):
         self._total_income = Decimal()
         self._total_expense = Decimal()
+        self._notices = []
 
         self._calculate_total_income()
         self._calculate_total_expense()
+        self._create_notices()
         self._calculated = True
 
     def _ensure_calculated(self):
         if not self._calculated:
             self.calculate()
-
-    def _get_notices(self):
-        # TODO: return warnings when contracts are about to expire
-        self._notices = 'This is a notice'
 
     def _calculate_total_income(self):
         self._total_income += Decimal(str(sum([transaction.amount for transaction in self.transaction_set.all() if transaction.category.hmrc_code == '20'])))
@@ -118,6 +118,11 @@ class Building(models.Model):
     def _calculate_total_expense(self):
         self._total_expense += Decimal(str(sum([transaction.amount for transaction in self.transaction_set.all() if transaction.category.hmrc_code != '20'])))
 
+    def _create_notices(self):
+        for tenancy in self.tenancy_set.all():
+            two_months_from_now = datetime.now().date() + relativedelta(months=2)
+            if tenancy.active and tenancy.end_date < two_months_from_now:
+                self._notices.append('Tenancy ending within 2 months')
 
 class Room(models.Model):
     owner = models.ForeignKey(User, blank=False)
@@ -162,17 +167,17 @@ class Tenancy(models.Model):
     @property
     def balance(self):
         self._ensure_calculated()
-        return (self._total_paid - self._total_charged).quantize(Decimal('1.00'))
+        return (self.total_paid - self.total_charged + sum(self._surplus.values())).quantize(Decimal('1.00'))
 
     @property
     def total_charged(self):
         self._ensure_calculated()
-        return self._total_charged.quantize(Decimal('1.00'))
+        return Decimal(str(sum([invoice.amount_due for invoice in self._invoices]))).quantize(Decimal('1.00'))
 
     @property
     def total_paid(self):
         self._ensure_calculated()
-        return self._total_paid.quantize(Decimal('1.00'))
+        return Decimal(str(sum([invoice.amount_paid for invoice in self._invoices]))).quantize(Decimal('1.00'))
 
     @property
     def surplus(self):
@@ -208,12 +213,6 @@ class Tenancy(models.Model):
         if not self._calculated:
             self.calculate()
 
-    def _total_charged(self):
-        return sum([invoice.amount_due for invoice in self._invoices])
-
-    def _total_paid(self):
-        return sum([invoice.amount_paid for invoice in self._invoices])
-
     def _generate_invoices(self):
         # go from month to month creating invoices
         while not self._all_months_processed():
@@ -246,19 +245,19 @@ class Tenancy(models.Model):
                 invoice.make_payment(transaction, payment_amount)
 
         # allocate surplus payments
-        #sort(lambda invoice: invoice.date, self.invoices)
         for invoice in self._invoices:
             if invoice.in_deficit:
                 new_surplus_list = {}
                 for transaction, surplus in self._surplus.iteritems():
                     if invoice.in_deficit:
-                        payment_amount = Decimal(str(transaction.amount))
-                        surplus = 0
+                        payment_amount = surplus
                         if payment_amount > invoice.deficit:
                             payment_amount = invoice.deficit
-                            surplus = Decimal(str(transaction.amount)) - payment_amount
+                            surplus = surplus - payment_amount
+                        else:
+                            surplus = Decimal('0')
                         invoice.make_payment(transaction, payment_amount)
-                    if surplus > 0:
+                    if surplus > Decimal('0'):
                         new_surplus_list[transaction] = surplus
                 self._surplus = new_surplus_list
 
@@ -338,4 +337,4 @@ class Transaction(models.Model):
     description = models.CharField(max_length=120, blank=False)
 
     def __str__(self):
-        return self.amount
+        return str(self.amount)
