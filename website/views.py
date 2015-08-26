@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import generic
 from django.conf import settings
 
-from models import Building, Room, Person, Tenancy, RentPrice, Transaction
+from models import Building, Room, Person, Tenancy, RentPrice, Transaction, TransactionCategory
 from forms import BuildingForm, RoomForm, PersonForm, UserForm, TenancyForm, RentPriceForm, TransactionForm
 
 def premium_required(view_function):
@@ -197,6 +197,13 @@ def user_new(request):
 
 def user_get_premium(request):
     return render(request, 'website/user_get_premium.html')
+
+def tax(request):
+    all_transaction_categories = TransactionCategory.objects.exclude(hmrc_code__isnull=True).all()
+    transaction_category_totals = {}
+    for transaction_category in all_transaction_categories:
+        transaction_category_totals[transaction_category] = transaction_category.sum_of_transactions(request.user)
+    return render(request, 'website/tax.html', {'transaction_category_totals': transaction_category_totals})
 
 # json
 def rooms_for_building(request):

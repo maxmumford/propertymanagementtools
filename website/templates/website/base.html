@@ -39,11 +39,12 @@
 			<ul>
 				<li><a href="/">Home</a></li>
 				{% if user.is_authenticated %}
-				<li><a href="/properties/">Properties</a></li>
-				<li><a href="/rooms/">Rooms</a></li>
-				<li><a href="/people/">People</a></li>
-				<li><a href="/tenancies/">Tenancies</a></li>
-				<li><a href="/transactions/">Transactions</a></li>
+				<li><a href="{% url 'buildings' %}">Properties</a></li>
+				<li><a href="{% url 'rooms' %}">Rooms</a></li>
+				<li><a href="{% url 'people' %}">People</a></li>
+				<li><a href="{% url 'tenancies' %}">Tenancies</a></li>
+				<li><a href="{% url 'transactions' %}">Transactions</a></li>
+				<li><a href="{% url 'tax' %}">Tax</a></li>
 				<li>Welcome, {{ user.username }} <a href="{% url 'user_logout' %}">[logout]</a></li>
 				{% else %}
 				<li><a href="{% url 'user_new' %}">[create account]</a> <a href="{% url 'user_login' %}">[login]</a></li>

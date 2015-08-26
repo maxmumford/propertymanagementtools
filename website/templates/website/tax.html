@@ -1,0 +1,6 @@
+{% extends "website/base.html" %}
+{% block content %}
+{% for category, total in transaction_category_totals.items %}
+	<p><b>{{ category.hmrc_code }}: {{ category.description }}:</b> {{ total }}</p>
+{% endfor %}
+{% endblock %}

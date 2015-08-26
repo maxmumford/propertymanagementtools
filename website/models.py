@@ -327,6 +327,9 @@ class TransactionCategory(models.Model):
     def __str__(self):
         return self.name
 
+    def sum_of_transactions(self, user):
+        return sum([Decimal(str(transaction.amount)) for transaction in self.transaction_set.filter(owner=user).all()])
+
 class Transaction(models.Model):
     owner = models.ForeignKey(User, blank=False)
     date = DatePickerField(blank=False)

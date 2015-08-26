@@ -39,6 +39,9 @@ urlpatterns = [
     url(r'^user/change_password$', 'django.contrib.auth.views.password_change', name='user_password_change', kwargs={'template_name': 'website/user_password_change.html','post_change_redirect':'/',}),
     url(r'^user/premium/$', views.user_get_premium, name='user_get_premium'),
 
+    # tax
+    url(r'^tax/$', views.tax, name='tax'),
+
     # json
     url(r'^chaining/rooms_for_building/$', views.rooms_for_building, name='rooms_for_building'),
     url(r'^chaining/buildings_for_tenancy/$', views.buildings_for_tenancy, name='buildings_for_tenancy'),
