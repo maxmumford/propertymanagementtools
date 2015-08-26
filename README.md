@@ -6,6 +6,8 @@
 * python-dateutil: apt-get install python-dateutil
 * sudo apt-get install python-simplejson
 * sudo pip install django-tables2
+* sudo pip install django-bootstrap3
+* sudo pip install eadred
 
 # Installation
 * copy propertymanagementtools/database.conf.sample to propertymanagementtools/database.conf and put in values for your db instance

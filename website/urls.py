@@ -1,5 +1,4 @@
 from django.conf.urls import url
-from django.contrib.auth.decorators import login_required, permission_required
 
 from . import views
 
@@ -23,13 +22,13 @@ urlpatterns = [
     url(r'^person/new/$', views.person_new, name='person_new'),
 
     # tenancies
-    url(r'^tenancies/$', login_required(views.tenancies.as_view()), name='tenancies'),
-    url(r'^tenancy/(?P<pk>[0-9]+)/$', login_required(views.tenancy.as_view()), name='tenancy'),
+    url(r'^tenancies/$', views.tenancies, name='tenancies'),
+    url(r'^tenancy/(?P<tenancy_id>[0-9]+)/$', views.tenancy, name='tenancy'),
     url(r'^tenancies/new/$', views.tenancy_new, name='tenancy_new'),
 
     # transactions
     url(r'^transactions/$', views.transactions, name='transactions'),
-    url(r'^transaction/(?P<pk>[0-9]+)/$', login_required(views.transaction.as_view()), name='transaction'),
+    url(r'^transaction/(?P<transaction_id>[0-9]+)/$', views.transaction, name='transaction'),
     url(r'^transaction/new/$', views.transaction_new, name='transaction_new'),
 
     # users

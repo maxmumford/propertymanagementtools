@@ -119,16 +119,15 @@ def person_new(request):
         return render(request, 'website/person_new.html', {'form': form})
 
 # tenancies
-class tenancies(generic.ListView):
-    template_name = 'website/tenancies.html'
-    context_object_name = 'tenancy_list'
+@login_required
+def tenancies(request):
+    tenancy_list = models.Tenancy.objects.filter(owner=request.user)
+    return render(request, 'website/tenancies.html', {'tenancy_list': tenancy_list})
 
-    def get_queryset(self):
-        return models.Tenancy.objects.filter(owner=self.request.user)
-
-class tenancy(generic.DetailView):
-    model = models.Tenancy
-    template_name = 'website/tenancy.html'
+@login_required
+def tenancy(request, tenancy_id):
+    tenancy = get_object_or_404(models.Tenancy, pk=tenancy_id, owner=request.user)
+    return render(request, 'website/tenancy.html', {'tenancy': tenancy})
 
 @login_required
 def tenancy_new(request):
@@ -154,6 +153,9 @@ def tenancy_new(request):
             return render(request, 'website/tenancy_new.html', {'form': form})
     else:
         form = forms.TenancyForm()
+        form.fields['building'].queryset = models.Building.objects.filter(owner=request.user)
+        form.fields['rooms'].queryset = models.Room.objects.filter(owner=request.user)
+        form.fields['people'].queryset = models.Person.objects.filter(owner=request.user)
     return render(request, 'website/tenancy_new.html', {'form': form})
 
 # transactions
@@ -180,6 +182,9 @@ def transaction_new(request):
             return render(request, 'website/transaction_new.html', {'form': form})
     else:
         form = forms.TransactionForm()
+        form.fields['tenancy'].queryset = models.Tenancy.objects.filter(owner=request.user)
+        form.fields['building'].queryset = models.Building.objects.filter(owner=request.user)
+        form.fields['person'].queryset = models.Person.objects.filter(owner=request.user)
     return render(request, 'website/transaction_new.html', {'form': form})
 
 # users

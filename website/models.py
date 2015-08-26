@@ -341,7 +341,7 @@ class Transaction(models.Model):
     tenancy = models.ForeignKey(Tenancy)
     person = models.ForeignKey(Person)
     category = models.ForeignKey(TransactionCategory)
-    description = models.CharField(max_length=120, blank=False)
+    description = models.CharField(max_length=120)
 
     def __str__(self):
         return str(self.amount)
