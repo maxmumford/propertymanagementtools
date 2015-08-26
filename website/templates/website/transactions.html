@@ -1,14 +1,7 @@
 {% extends "website/base.html" %}
 {% load tags %}
+{% load render_table from django_tables2 %}
 {% block content %}
-	{% if transaction_list %}
-	    <ul>
-	    {% for transaction in transaction_list %}
-	        <li><a href="{% url 'transaction' transaction.id %}">{{ transaction.date }} for {{ transaction.amount }} in category {{ transaction.transactioncategory.name }}</a></li>
-	    {% endfor %}
-	    </ul>
-	{% else %}
-	    <p>No Transactions.</p>
-	{% endif %}
+	{% render_table table 'website/snippets/table.html' %}
 	<p><a href="{% url 'transaction_new' %}">Create transaction</a></p>
 {% endblock %}

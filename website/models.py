@@ -62,7 +62,10 @@ class Building(models.Model):
         self._ensure_calculated()
         now = datetime.now().date()
         days_passed = (now - self.purchase_date).days
-        return self._total_income / days_passed
+        if self._total_income == 0:
+            return 0
+        else:
+            return self._total_income / days_passed
 
     @property
     @currency

@@ -1,18 +1,22 @@
 {% extends "website/base.html" %}
+{% load bootstrap3 %}
 {% block content %}
-	{% if building %}
-	    <p><h2>Property: {{ building.name }}</h2></p>
-	    <p>Rooms:</p>
-	    <ul>
-	    	{% for room in building.room_set.all %}
-	    	<li>{{ room.name }}</li>
-	    	{% endfor %}
-	    </ul>
-	    <form action="{% url 'room_new' %}" method="post">
-	    	<input type="hidden" name="building" value="{{ building.id }}" />
-	    	{% csrf_token %}
-	    	{{ room_form.as_p }}
-	    	<input type="submit" value="Create" />
-	    </form>
-	{% endif %}
+    <p><h2>Property: {{ building.name }}</h2></p>
+    <p>Rooms:</p>
+    <ul>
+    	{% for room in building.room_set.all %}
+    	<li>{{ room.name }}</li>
+    	{% endfor %}
+    </ul>
+
+    <form action="{% url 'room_new' %}" method="post" class="form">
+    	{% csrf_token %}
+    	<input type="hidden" name="building" value="{{ building.id }}" />
+    	{% bootstrap_form room_form %}
+    	{% buttons %}
+    	<button type="submit" class="btn btn-primary">
+	        {% bootstrap_icon "star" %} Create
+	    </button>
+    	{% endbuttons %}
+    </form>
 {% endblock %}
