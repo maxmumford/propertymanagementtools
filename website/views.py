@@ -161,9 +161,10 @@ def transactions(request):
     RequestConfig(request).configure(table)
     return render(request, 'website/transactions.html', {'table': table})
 
-class transaction(generic.DetailView):
-    model = models.Transaction
-    template_name = 'website/transaction.html'
+@login_required
+def transaction(request, transaction_id):
+    transaction = get_object_or_404(models.Transaction, pk=transaction_id, owner=request.user)
+    return render(request, 'website/transaction.html', {'transaction': transaction})
 
 @login_required
 def transaction_new(request):

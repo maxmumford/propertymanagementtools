@@ -75,15 +75,17 @@ def date_spans_overlap(start_date_A, end_date_A, start_date_B, end_date_B):
     return start_date_A <= end_date_B and end_date_A >= start_date_B
 
 class TenancyForm(CustomModelForm):
-
     price = forms.FloatField()
 
     class Meta:
         model = Tenancy
         fields = ['start_date', 'end_date', 'building', 'rooms', 'people']
-        widgets = {
-            'rooms': forms.widgets.SelectMultiple(attrs={'class': 'chained', 'data-chain-from': 'building', 'data-chain-endpoint': '/chaining/rooms_for_building'}),
-        }
+
+    def __init__(self, *args, **kwargs):
+        init_result = super(TenancyForm, self).__init__(*args, **kwargs)
+        rooms_attrs = {'class': 'chained', 'data-chain-from': 'building', 'data-chain-endpoint': '/chaining/rooms_for_building'}
+        self.fields['rooms'].widget.attrs.update(rooms_attrs)
+        return init_result
 
     def clean(self):
         if not self.is_valid():
@@ -135,13 +137,16 @@ class RentPriceForm(CustomModelForm):
         return cleaned_data
 
 class TransactionForm(CustomModelForm):
+    def __init__(self, *args, **kwargs):
+        init_result = super(TransactionForm, self).__init__(*args, **kwargs)
+        building_attrs = {'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/buildings_for_tenancy', \
+                                                             'data-chain-autoselect': 'true', 'data-chain-start-disabled': 'false'}
+        self.fields['building'].widget.attrs.update(building_attrs)
+        return init_result
+
     class Meta:
         model = Transaction
         fields = ['date', 'amount', 'description', 'tenancy', 'building', 'person', 'category']
-        widgets = {
-            'building': forms.widgets.SelectMultiple(attrs={'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/buildings_for_tenancy', \
-                                                            'data-chain-autoselect': 'true', 'data-chain-start-disabled': 'false'}),
-        }
 
 class UserForm(forms.Form):
     first_name = forms.CharField(max_length=30)
