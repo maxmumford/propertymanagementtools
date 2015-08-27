@@ -139,9 +139,10 @@ class RentPriceForm(CustomModelForm):
 class TransactionForm(CustomModelForm):
     def __init__(self, *args, **kwargs):
         init_result = super(TransactionForm, self).__init__(*args, **kwargs)
-        building_attrs = {'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/buildings_for_tenancy', \
-                                                             'data-chain-autoselect': 'true', 'data-chain-start-disabled': 'false'}
+        building_attrs = {'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/buildings_for_tenancy', 'data-chain-start-enabled': 'true'}
         self.fields['building'].widget.attrs.update(building_attrs)
+        person_attrs = {'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/people_for_tenancy', 'data-chain-start-enabled': 'true'}
+        self.fields['person'].widget.attrs.update(person_attrs)
         return init_result
 
     class Meta:

@@ -229,3 +229,19 @@ def buildings_for_tenancy(request):
         tenancy = models.Tenancy.objects.get(owner=request.user, id=tenancy_id)
         building_list = {tenancy.building.id: str(tenancy.building)}
     return HttpResponse(simplejson.dumps(building_list), content_type="application/json")
+
+def people_for_tenancy(request):
+    tenancy_id = request.GET.get('tenancy_id')
+    if not tenancy_id:
+        raise Http404
+    if tenancy_id == '0':
+        people = models.Person.objects.filter(owner=request.user).all()
+        people_list = {}
+        for person in people:
+            people_list[person.id] = str(person)
+    else:
+        tenancy = models.Tenancy.objects.get(owner=request.user, id=tenancy_id)
+        people_list = {}
+        for person in tenancy.people.all():
+            people_list[person.id] = str(person)
+    return HttpResponse(simplejson.dumps(people_list), content_type="application/json")
