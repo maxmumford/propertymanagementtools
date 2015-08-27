@@ -13,7 +13,6 @@ $(document).ready(function () {
 
 	// datepicker
 	$.each($('input.datepicker'), function(propertyName, datepicker){
-		debugger;
 		datepicker = $(datepicker);
 		var datepicker_hidden = $('#id_' + datepicker.data('datepickerHiddenId'));
 

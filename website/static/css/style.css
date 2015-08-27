@@ -19,6 +19,11 @@ body {
   text-align: center;
 }
 
+/* select2 */
+.select2-search, .select2-search input, .select2-results { 
+	background-color: #e3e3e3; 
+}
+
 /* layout */
 header h1 {
 	text-align: center;
@@ -52,3 +57,28 @@ footer {
 	font-style: italic;
 	font-size: .8em;
 }
+
+/* dashboard */
+.kanban-container {
+	text-align: center;
+}
+
+.kanban {
+	padding: 15px;
+	background-color: #e3e3e3;
+	display: inline-block;
+	margin: 20px;
+}
+
+.kanban:hover {
+	background-color: #bbbbbb;
+	text-decoration: none;
+}
+
+.kanban .icon.large {
+	font-size: 3em;
+}
+
+ .building_summary table td{
+ 	padding: 5px;
+ }

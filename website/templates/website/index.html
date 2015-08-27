@@ -1,11 +1,13 @@
 {% extends "website/base.html" %}
 {% block content %}
+<div class="kanban-container">
 	{% if buildings %}
-	<h1>Properties:</h1>
     {% for building in buildings %}
-        {% include "website/snippets/building_summary.html" with building=building %}
+        {% include "website/snippets/kanban_building_summary.html" with building=building %}
     {% endfor %}
+    {% include "website/snippets/kanban_building_new.html" %}
 	{% else %}
 	    <p>No Properties.</p>
 	{% endif %}
+</div>
 {% endblock %}
