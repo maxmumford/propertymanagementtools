@@ -1,6 +1,34 @@
+datepicker_options = {
+	'format': 'dd/mm/yyyy', 
+	'autoclose': true, 
+	'clearBtn': true, 
+	'enableOnReadonly': false,
+	'todayBtn': true,
+	'todayHighlight': true
+}
+
 $(document).ready(function () {
 	// select2
 	$('select').select2();
+
+	// datepicker
+	$.each($('input.datepicker'), function(propertyName, datepicker){
+		debugger;
+		datepicker = $(datepicker);
+		var datepicker_hidden = $('#id_' + datepicker.data('datepickerHiddenId'));
+
+	    // on load, set the datepicker to the english version of the hidden field
+	    var american_date = datepicker_hidden.val();
+	    if(american_date.length > 0){
+	        var american_date_parts = american_date.split('/')
+	        datepicker.val(american_date_parts[1] + '/' + american_date_parts[0] + '/' + american_date_parts[2])
+	    }
+
+	    // set up the datapicker and update the hidden field to english format
+	    datepicker.datepicker(datepicker_options).on('changeDate', function (e) {
+	        datepicker_hidden.val(e.format('mm/dd/yyyy'))
+	    });
+    });
 
 	// chaining selects
 	$.each($('.chained'), function(propertyName, selectElement){
