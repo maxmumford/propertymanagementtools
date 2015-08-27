@@ -39,13 +39,13 @@ def building(request, building_id):
     building = get_object_or_404(models.Building, pk=building_id, owner=request.user)
 
     # get room form and prepopulate building_id field as the current building
-    room_form = forms.RoomForm(initial={'building': building_id})
+    room_form = forms.RoomForm(request, initial={'building': building_id})
     return render(request, 'website/building.html', {'building': building, 'room_form': room_form})
 
 @login_required
 def building_new(request):
     if request.method == 'POST':
-        form = forms.BuildingForm(request.POST, request=request)
+        form = forms.BuildingForm(request, request.POST)
         if form.is_valid():
             building = form.save(commit=False)
             building.owner = request.user
@@ -54,7 +54,7 @@ def building_new(request):
         else:
             return render(request, 'website/building_new.html', {'form': form})
     else:
-        form = forms.BuildingForm()
+        form = forms.BuildingForm(request)
 
     return render(request, 'website/building_new.html', {'form': form})
 
@@ -75,7 +75,7 @@ def room_new(request):
     Create a new room and redirect to it's building
     """
     if request.method == 'POST':
-        form = forms.RoomForm(request.POST, request=request)
+        form = forms.RoomForm(request, request.POST)
         if form.is_valid():
             # check building is owned by user
             if form.cleaned_data['building'].owner == request.user:
@@ -86,7 +86,7 @@ def room_new(request):
         else:
             return render(request, 'website/room_new.html', {'form': form})
     else:
-        form = forms.RoomForm()
+        form = forms.RoomForm(request)
         return render(request, 'website/room_new.html', {'form': form})
 
 # people
@@ -106,7 +106,7 @@ def person_new(request):
     Create a new person and redirect to people
     """
     if request.method == 'POST':
-        form = forms.PersonForm(request.POST, request=request)
+        form = forms.PersonForm(request, request.POST)
         if form.is_valid():
             person = form.save(commit=False)
             person.owner = request.user
@@ -115,7 +115,7 @@ def person_new(request):
         else:
             return render(request, 'website/person_new.html', {'form': form})
     else:
-        form = forms.PersonForm()
+        form = forms.PersonForm(request)
         return render(request, 'website/person_new.html', {'form': form})
 
 # tenancies
@@ -132,7 +132,7 @@ def tenancy(request, tenancy_id):
 @login_required
 def tenancy_new(request):
     if request.method == 'POST':
-        form = forms.TenancyForm(request.POST, request=request)
+        form = forms.TenancyForm(request, request.POST)
         if form.is_valid():
             tenancy = form.save(commit=False)
             tenancy.owner = request.user
@@ -140,7 +140,7 @@ def tenancy_new(request):
             form.save_m2m()
 
             # create corresponding RentPrice record
-            rent_price_form = forms.RentPriceForm({'tenancy': tenancy.id, 'start_date': tenancy.start_date, 'end_date': tenancy.end_date, 'price': request.POST['price']})
+            rent_price_form = forms.RentPriceForm(request, {'tenancy': tenancy.id, 'start_date': tenancy.start_date, 'end_date': tenancy.end_date, 'price': request.POST['price']})
             if rent_price_form.is_valid():
                 rent_price = rent_price_form.save(commit=False)
                 rent_price.owner = request.user
@@ -152,10 +152,7 @@ def tenancy_new(request):
         else:
             return render(request, 'website/tenancy_new.html', {'form': form})
     else:
-        form = forms.TenancyForm()
-        form.fields['building'].queryset = models.Building.objects.filter(owner=request.user)
-        form.fields['rooms'].queryset = models.Room.objects.filter(owner=request.user)
-        form.fields['people'].queryset = models.Person.objects.filter(owner=request.user)
+        form = forms.TenancyForm(request)
     return render(request, 'website/tenancy_new.html', {'form': form})
 
 # transactions
@@ -171,7 +168,7 @@ class transaction(generic.DetailView):
 @login_required
 def transaction_new(request):
     if request.method == 'POST':
-        form = forms.TransactionForm(request.POST, request=request)
+        form = forms.TransactionForm(request, request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
             transaction.owner = request.user
@@ -181,23 +178,20 @@ def transaction_new(request):
         else:
             return render(request, 'website/transaction_new.html', {'form': form})
     else:
-        form = forms.TransactionForm()
-        form.fields['tenancy'].queryset = models.Tenancy.objects.filter(owner=request.user)
-        form.fields['building'].queryset = models.Building.objects.filter(owner=request.user)
-        form.fields['person'].queryset = models.Person.objects.filter(owner=request.user)
+        form = forms.TransactionForm(request)
     return render(request, 'website/transaction_new.html', {'form': form})
 
 # users
 def user_new(request):
     if request.method == 'POST':
-        form = forms.UserForm(request.POST)
+        form = forms.UserForm(request, request.POST)
         if form.is_valid():
             user = form.save()
             return HttpResponseRedirect(reverse('user_login'))
         else:
             return render(request, 'website/user_new.html', {'form': form})
     else:
-        form = forms.UserForm()
+        form = forms.UserForm(request)
     return render(request, 'website/user_new.html', {'form': form})
 
 def user_get_premium(request):

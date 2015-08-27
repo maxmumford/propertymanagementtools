@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
 from django.conf import settings
+import django.db.models
 from django.db.models import fields
 import widgets
 from models import Building, Room, Person, Tenancy, RentPrice, Transaction
@@ -12,10 +13,32 @@ from models import Building, Room, Person, Tenancy, RentPrice, Transaction
 from datetime import datetime
 
 class CustomModelForm(forms.ModelForm):
+    """ 
+    Caches the request object for each form and for each field,
+    checks if the field has an owner field and limits the queryset
+    to records where owner = request.user, thereby sandboxing
+    the user data in forms.
+    """
+    def __init__(self, request, *args, **kwargs):
+        # cache request and call super
+        self.request = request
+        init_result = super(CustomModelForm, self).__init__(*args, **kwargs)
 
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        super(CustomModelForm, self).__init__(*args, **kwargs)
+        # go through each field
+        for field_name, field_widget in self.fields.iteritems():
+            # find the model field definition
+            model_field = getattr(self.Meta.model, field_name, None)
+            if model_field:
+                # check if it has a related model
+                related_model = getattr(model_field.field, 'related_model', None)
+                if related_model:
+                    # check if it has an owner field
+                    owner_field = getattr(related_model, 'owner', None)
+                    if owner_field:
+                        # filter field objects by owner = logged in user
+                        field_widget.queryset = related_model.objects.filter(owner=request.user)
+
+        return init_result
 
 class BuildingForm(CustomModelForm):
     class Meta:
@@ -52,6 +75,7 @@ def date_spans_overlap(start_date_A, end_date_A, start_date_B, end_date_B):
     return start_date_A <= end_date_B and end_date_A >= start_date_B
 
 class TenancyForm(CustomModelForm):
+
     price = forms.FloatField()
 
     class Meta:
