@@ -1,0 +1,20 @@
+{% extends "website/base_partial.html" %}
+{% block content %}
+<div class="dashboard row row-eq-height">
+{% for building in buildings %}
+    {% include "website/snippets/dashboard_building_summary.html" with building=building %}
+    {% if forloop.last %}
+        {% if forloop.counter|divisibleby:"4" %}
+            </div><div class="dashboard row row-eq-height">
+            {% include "website/snippets/dashboard_building_new.html" %}
+        {% else %}
+            {% include "website/snippets/dashboard_building_new.html" %}
+        {% endif %}
+    </div>
+    {% else %}
+    {% if forloop.counter|divisibleby:"4" %}
+        </div><div class="dashboard row row-eq-height">
+    {% endif %}
+    {% endif %}
+{% endfor %}
+{% endblock %}

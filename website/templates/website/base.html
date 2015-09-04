@@ -14,12 +14,14 @@
 	<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 
 	<!-- jquery, bootstrap, moment -->
+	{% block js %}
 	{% load bootstrap3 %}
 	<script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'bower_components/select2/dist/js/select2.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'js/js.js'%}"></script>
+	{% endblock %}
 
 	<!-- styling: jquery, boostrap -->
 	<link rel="stylesheet" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}" />
@@ -53,7 +55,7 @@
 			</ul>
 		</navigation>
 	</header>
-	<div id="content">
+	<div class="container">
 		{% bootstrap_messages %}
 		{% block content %}{% endblock %}
 	</div>

@@ -1,4 +1,8 @@
-/* base */
+
+/* 
+ * base
+ * --------------------------------------------------
+ */
 body {
 	margin: 0px;
 	padding: 0px;
@@ -24,7 +28,41 @@ body {
 	background-color: #e3e3e3; 
 }
 
-/* layout */
+/* dashboard */
+.dashboard .item {
+	margin: 15px;
+	padding: 15px;
+}
+
+.dashboard .item:hover {
+	background-color: #bbbbbb;
+	text-decoration: none;
+}
+
+.dashboard .item, .dashboard .item.ok {
+	background-color: #e3e3e3;
+}
+
+.dashboard .item.problem {
+	background-color: red;
+}
+
+.dashboard .item.warning {
+	background-color: orange;
+}
+
+.dashboard .item .icon.large {
+	font-size: 3em;
+}
+
+ .building_summary table td{
+ 	padding: 5px;
+ }
+
+/* 
+ * layout
+ * --------------------------------------------------
+ */
 header h1 {
 	text-align: center;
 }
@@ -58,27 +96,40 @@ footer {
 	font-size: .8em;
 }
 
-/* dashboard */
-.kanban-container {
+/* index */
+#dashboard_placeholder {
+	display: block;
 	text-align: center;
+	margin: 50px auto;
 }
 
-.kanban {
-	padding: 15px;
-	background-color: #e3e3e3;
-	display: inline-block;
-	margin: 20px;
+/* 
+ * bootstrap modifications 
+ * --------------------------------------------------
+ */
+/* Row with equal height columns */
+.row-eq-height {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
 }
 
-.kanban:hover {
-	background-color: #bbbbbb;
-	text-decoration: none;
+.container {
+  padding-right: 15px;
+  padding-left: 15px;
 }
 
-.kanban .icon.large {
-	font-size: 3em;
+.row {
+  margin-bottom: 20px;
 }
 
- .building_summary table td{
- 	padding: 5px;
- }
+.row .row {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+[class*="col-"] {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}

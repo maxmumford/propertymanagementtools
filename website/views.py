@@ -2,6 +2,7 @@ import simplejson
 
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import generic
@@ -23,10 +24,17 @@ def premium_required(view_function):
 # pages
 def index(request):
     if request.user.is_authenticated():
-        buildings = models.Building.objects.filter(owner=request.user)
-        return render(request, 'website/index.html', {'buildings': buildings})
+        return render(request, 'website/index.html')
     else:
         return render(request, 'website/index_anonymous.html')
+
+def partial_dashboard(request):
+    if request.user.is_authenticated():
+        buildings = models.Building.objects.filter(owner=request.user)
+        return render(request, 'website/partials/dashboard.html', {'buildings': buildings})
+    else:
+        raise PermissionDenied
+
 
 # properties
 @login_required

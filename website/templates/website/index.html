@@ -1,13 +1,15 @@
 {% extends "website/base.html" %}
+{% load staticfiles %}
+{% block js %}
+    {% load static %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'js/index.js' %}"></script>
+{% endblock %}
 {% block content %}
-<div class="kanban-container">
-	{% if buildings %}
-    {% for building in buildings %}
-        {% include "website/snippets/kanban_building_summary.html" with building=building %}
-    {% endfor %}
-    {% include "website/snippets/kanban_building_new.html" %}
-	{% else %}
-	    <p>No Properties.</p>
-	{% endif %}
+<div id="dashboard_container">
+	<div id="dashboard_placeholder">
+		<p><img src="{% static 'images/loading.gif' %}" alt="Loading Dashboard"/></p>
+		<p>Loading your dashboard...</p>
+	</div>
 </div>
 {% endblock %}

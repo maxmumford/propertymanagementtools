@@ -1,0 +1,27 @@
+<a href="{% url 'building' building.id %}" class="col-sm-3 item building_summary {{ building.status_css_class }}">
+	<h3>{{ building.name }}</h3>
+	<table>
+		<tr title="How many rooms are currently tenanted">
+			<td class="icon"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></td>
+			<td class="data">{{ building.rooms_full_count }} / {{ building.rooms_count }}</td>
+		</tr>
+		<tr title="Outstanding balance for the tenancy">
+			<td class="icon"><span class="glyphicon glyphicon-scale" aria-hidden="true"></span></td>
+			<td class="data">{{ building.tenancy_balance }}</td>
+		</tr>
+		<tr title="Average profit per month and year">
+			<td class="icon"><span class="glyphicon glyphicon-gbp" aria-hidden="true"></span></td>
+			<td class="data">£{{ building.profit_per_month }}pm, £{{ building.profit_per_year }}pa</td>
+		</tr>
+		{% if building.notices %}
+		<tr title="Notices for the property">
+			<td class="icon"><span class="glyphicon glyphicon-alert" aria-hidden="true"></span></td>
+			<td class="data">
+				{% for notice in building.notices %}
+				<div class="warning">{{ notice }}</div>
+				{% endfor %}
+			</td>
+		</tr>
+		{% endif %}
+	</table>
+</a>

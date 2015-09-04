@@ -45,4 +45,7 @@ urlpatterns = [
     url(r'^chaining/rooms_for_building/$', views.rooms_for_building, name='rooms_for_building'),
     url(r'^chaining/buildings_for_tenancy/$', views.buildings_for_tenancy, name='buildings_for_tenancy'),
     url(r'^chaining/people_for_tenancy/$', views.people_for_tenancy, name='people_for_tenancy'),
+
+    # partials
+    url(r'^partials/dashboard/$', views.partial_dashboard, name='partial_dashboard'),
 ]

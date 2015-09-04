@@ -20,7 +20,7 @@ TITLE_CHOICES = (
     ('MRS', 'Mrs.'),
     ('MS', 'Ms.'),
 )
-
+som
 def currency(view_function):
     def _wrapped_currency(request, *args, **kwargs): 
         return round(view_function(request, *args, **kwargs), 2)
@@ -54,7 +54,11 @@ class Building(models.Model):
     @currency
     def tenancy_balance(self):
         self._ensure_calculated()
-        return sum([tenancy.balance for tenancy in self.tenancy_set.all() if tenancy.active == True])
+        balance = Decimal()
+        for tenancy in self.tenancy_set.all():
+            if tenancy.active == True and tenancy.balance < 0:
+                balance = balance + tenancy.balance
+        return balance
 
     @property
     @currency
@@ -99,6 +103,20 @@ class Building(models.Model):
     def total_expense(self):
         self._ensure_calculated()
         return self._total_expense.quantize(Decimal('1.00'))
+
+    @property
+    def status_css_class(self):
+        self._ensure_calculated()
+        # check rooms are full
+        if self.rooms_full_count != self.rooms_count:
+            return 'problem'
+
+        # check outstanding balance
+        elif self.tenancy_balance < 0:
+            return 'warning'
+
+        else:
+            return 'ok'
 
     def __str__(self):
         return self.name
