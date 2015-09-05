@@ -31,6 +31,15 @@ urlpatterns = [
     url(r'^transaction/(?P<transaction_id>[0-9]+)/$', views.transaction, name='transaction'),
     url(r'^transaction/new/$', views.transaction_new, name='transaction_new'),
 
+    url(r'^transactions/bank_statement/upload$', views.transactions_bank_statement_upload, name='transactions_bank_statement_upload'),
+    url(r'^transactions/bank_statement/map$', views.transactions_bank_statement_map, name='transactions_bank_statement_map'),
+    url(r'^transactions/bank_statement/import$', views.transactions_bank_statement_import, name='transactions_bank_statement_import'),
+    url(r'^transactions/bank_statement/review$', views.transactions_bank_statement_review, name='transactions_bank_statement_review'),
+    url(r'^transactions/bank_statement/delete$', views.transactions_bank_statement_delete, name='transactions_bank_statement_delete'),
+
+    # transaction import pending
+    url(r'^transaction_import_pending/delete/$', views.transaction_import_pending_delete, name='transaction_import_pending_delete'), 
+
     # users
     url(r'^user/new/$', views.user_new, name='user_new'),
     url(r'^user/login/$', 'django.contrib.auth.views.login', name='user_login', kwargs={'template_name': 'website/user_login.html'}),

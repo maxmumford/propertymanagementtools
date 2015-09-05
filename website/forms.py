@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
@@ -8,9 +10,7 @@ from django.conf import settings
 import django.db.models
 from django.db.models import fields
 import widgets
-from models import Building, Room, Person, Tenancy, RentPrice, Transaction
-
-from datetime import datetime
+from models import TransactionImportPending, Building, Room, Person, Tenancy, RentPrice, Transaction
 
 class CustomModelForm(forms.ModelForm):
     """ 
@@ -149,6 +149,23 @@ class TransactionForm(CustomModelForm):
         model = Transaction
         fields = ['date', 'amount', 'description', 'tenancy', 'building', 'person', 'category']
 
+class TransactionImportPendingForm(CustomModelForm):
+    def __init__(self, *args, **kwargs):
+        init_result = super(TransactionImportPendingForm, self).__init__(*args, **kwargs)
+        building_attrs = {'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/buildings_for_tenancy', 'data-chain-start-enabled': 'true'}
+        self.fields['building'].widget.attrs.update(building_attrs)
+        person_attrs = {'class': 'chained', 'data-chain-from': 'tenancy', 'data-chain-endpoint': '/chaining/people_for_tenancy', 'data-chain-start-enabled': 'true'}
+        self.fields['person'].widget.attrs.update(person_attrs)
+        return init_result
+
+    class Meta:
+        model = TransactionImportPending
+        fields = ['date', 'amount', 'description', 'tenancy', 'building', 'person', 'category']
+        widgets = {
+            'date': HiddenInput(),
+            'amount': HiddenInput(),
+        }
+
 class UserForm(forms.Form):
     first_name = forms.CharField(max_length=30)
     last_name = forms.CharField(max_length=30)
@@ -159,3 +176,14 @@ class UserForm(forms.Form):
     def save(self):
         if self.is_valid():
             user = User.objects.create_user(self.cleaned_data['username'], self.cleaned_data['email'], self.cleaned_data['password'], first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'])
+
+class BankStatementUploadForm(forms.Form):
+    bank_statement_file = forms.FileField(label='Select your CSV bank statement', help_text='Maximum file size is 42 megabytes')
+
+    def save(self, user):
+        # raise exception if bank statement already exists
+        if user.profile.bank_statement_file_exists:
+            raise ValidationError('Bank statement already exists, please delete it before uploading a new one')
+
+        # save bank statement
+        user.profile.bank_statement_save(self.cleaned_data['bank_statement_file'])

@@ -9,7 +9,7 @@ datepicker_options = {
 
 $(document).ready(function () {
 	// select2
-	$('select').select2();
+	$('select').select2({width: 'resolve'});
 
 	// datepicker
 	$.each($('input.datepicker'), function(propertyName, datepicker){
@@ -35,7 +35,14 @@ $(document).ready(function () {
 		var startEnabled = selectElement.data("chainStartEnabled");
 		var chain_from = selectElement.data('chainFrom');
 		var chain_endpoint = selectElement.data('chainEndpoint');
-		var chain_from_element = $('#id_' + chain_from);
+
+		// formsets prefix ids and names with form-#number#-, so take this into account when finding the chain_from element
+		var chain_from_prefix = '';
+		if (selectElement.attr('name').indexOf('form-') >= 0){
+			var name_parts = selectElement.attr('name').split('-');
+			chain_from_prefix = name_parts[0] + '-' + name_parts[1] + '-';
+		}
+		var chain_from_element = $('#id_' + chain_from_prefix + chain_from);
 
 		// disable the element because something else must be selected first
 		if (startEnabled != true){

@@ -1,0 +1,31 @@
+{% extends "website/base.html" %}
+{% load bootstrap3 %}
+{% block content %}
+    <p><a href="{% url 'transactions_bank_statement_delete' %}">Delete file and start over</a></p>
+    {% if header_row %}
+        <form action="{% url 'transactions_bank_statement_import' %}" method="post" class="form">
+        {% csrf_token %}
+        {% for header in header_row %}
+            <div class="form-group">
+                <label class="control-label" for="{{ header }}">{{ header }}</label>
+                <div class="input-group">
+                    <select name="{{ header }}">
+                        <option value="ignore" selected="true">Ignore this field</option>
+                        <option value="date">Date</option>
+                        <option value="amount">Amount</option>
+                        <option value="amount_credit">Amount Credit</option>
+                        <option value="amount_debit">Amount Debit</option>
+                        <option value="description">Description</option>
+                    </select>
+                </div>
+            </div>
+        {% endfor %}
+        {% buttons %}
+        <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "star" %} Submit
+            </button>
+        {% endbuttons %}
+        </form>
+    {% endif %}
+
+{% endblock %}

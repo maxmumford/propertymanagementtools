@@ -24,6 +24,9 @@ LOGIN_URL = 'user_login'
 PREMIUM_GROUP_NAME = 'Premium'
 FREE_GROUP_NAME = 'Free'
 
+# uploads
+BANK_STATEMENT_DIRECTORY = 'website/static/uploads/bank_statements'
+
 # bower
 BOWER_INSTALLED_APPS = (
     'bootstrap#3.3.5',

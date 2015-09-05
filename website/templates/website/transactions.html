@@ -3,5 +3,5 @@
 {% load render_table from django_tables2 %}
 {% block content %}
 	{% render_table table 'website/snippets/table.html' %}
-	<p><a href="{% url 'transaction_new' %}">Create transaction</a></p>
+    <p><a href="{% url 'transaction_new' %}">Create transaction</a> | <a href="{% url 'transactions_bank_statement_upload' %}">Import Bank Statement</a></p>
 {% endblock %}

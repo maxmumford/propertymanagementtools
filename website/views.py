@@ -1,5 +1,8 @@
 import simplejson
+import csv
+from datetime import datetime
 
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404
 from django.core.exceptions import PermissionDenied
@@ -8,6 +11,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import generic
 from django.conf import settings
 from django_tables2   import RequestConfig
+from django.forms.models import modelformset_factory
+from django.forms import HiddenInput
 
 import models
 import forms
@@ -190,17 +195,200 @@ def transaction_new(request):
         form = forms.TransactionForm(request)
     return render(request, 'website/transaction_new.html', {'form': form})
 
+# transaction import pending
+@login_required
+def transaction_import_pending_delete(request):
+    """ Delete import pending and return empty 200 response """
+    transaction_import_pending = get_object_or_404(models.TransactionImportPending, pk=request.GET.get('id', None), owner=request.user)
+    transaction_import_pending.delete()
+    return HttpResponseRedirect(reverse('transactions_bank_statement_review'))
+
+@login_required
+def transactions_bank_statement_upload(request):
+    # if file already exists redirect to map
+    if request.user.profile.bank_statement_file_exists:
+        return HttpResponseRedirect(reverse('transactions_bank_statement_map'))
+
+    # save uploaded file and redirect to mapping page
+    if request.method == 'POST':
+        form = forms.BankStatementUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(request.user)
+            return HttpResponseRedirect(reverse('transactions_bank_statement_map'))
+        else:
+            return render(request, 'website/transactions_bank_statement_upload.html', {'form': form})
+
+    # render upload form
+    else:
+        form = forms.BankStatementUploadForm()
+    return render(request, 'website/transactions_bank_statement_upload.html', {'form': form})
+
+@login_required
+def transactions_bank_statement_map(request):
+    if request.user.profile.bank_statement_file_exists:
+        # parse the file and render the mapping template with the column headers
+        with open(request.user.profile.bank_statement_file_path, 'rb') as bank_statement_csv_file:
+            try:
+                csv_dialect = csv.Sniffer().sniff(bank_statement_csv_file.read(1024))
+                bank_statement_csv_file.seek(0)
+                csv_reader = csv.reader(bank_statement_csv_file, csv_dialect)
+                for row in csv_reader:
+                    return render(request, 'website/transactions_bank_statement_map.html', {'header_row': row})
+            except csv.Error as e:
+                messages.add_message(request, messages.ERROR, 'Sorry, we could not read that file. Please delete it try another format')
+                return render(request, 'website/transactions_bank_statement_map.html')
+    else:
+        return HttpResponseRedirect(reverse('transactions_bank_statement_upload'))
+
+@login_required
+def transactions_bank_statement_import(request):
+    # make sure a file exists
+    if not request.user.profile.bank_statement_file_exists:
+        return HttpResponseRedirect(reverse('transactions_bank_statement_upload'))
+
+    # make sure the form was submitted
+    if not request.POST:
+        return HttpResponseRedirect(reverse('transactions_bank_statement_map'))
+
+    # make sure each transaction field has been assigned to a header
+    taken_fields = [value for key, value in request.POST.iteritems() if key != 'csrfmiddlewaretoken' and value != 'ignore']
+    if 'date' not in taken_fields or \
+        ('amount' not in taken_fields and 'amount_credit' not in taken_fields and 'amount_debit' not in taken_fields):
+        messages.add_message(request, messages.ERROR, 'Not all fields have been mapped; please make sure at least the Date and Amount files have been mapped')
+        return HttpResponseRedirect(reverse('transactions_bank_statement_map'))
+
+    # import rows from file using mapping supplied in request.POST
+    DATE_FORMATS = ['%d/%m/%Y', '%d/%m/%Y %I:%M:%S %p', '%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M',\
+                    '%Y/%m/%d', '%Y/%m/%d %I:%M:%S %p', '%Y/%m/%d %H:%M:%S', '%Y/%m/%d %H:%M',]
+    with open(request.user.profile.bank_statement_file_path, 'rb') as bank_statement_csv_file:
+        try:
+            csv_dialect = csv.Sniffer().sniff(bank_statement_csv_file.read(1024))
+            bank_statement_csv_file.seek(0)
+            csv_reader = csv.reader(bank_statement_csv_file, csv_dialect)
+            is_header = True
+            header = None
+            for row in csv_reader:
+                if is_header:
+                    header = row
+                    is_header = False
+                else:
+                    # create ToImport record from row
+                    to_import_data = dict.fromkeys(['date', 'amount', 'amount_debit', 'amount_credit', 'description'])
+
+                    for column_number in range(0, len(row)):
+                        column_header = header[column_number]
+                        corresponding_field_name = request.POST[column_header]
+
+                        for data_field_name in to_import_data.keys():
+                            if corresponding_field_name == data_field_name:
+                                to_import_data[data_field_name] = row[column_number]
+
+                                # parse date
+                                if corresponding_field_name == 'date':
+                                    parsed_date = None
+                                    for date_format in DATE_FORMATS:
+                                        try:
+                                            parsed_date = datetime.strptime(row[column_number], date_format)
+                                            break
+                                        except ValueError:
+                                            pass
+                                    if parsed_date == None:
+                                         ValueError('Cold not parse the date %s' % row[column_number])
+                                    else:
+                                        to_import_data[data_field_name] = datetime.strftime(parsed_date, '%Y-%m-%d')
+                                break
+
+                    # handle amount credit and debit
+                    if to_import_data['amount_debit'] and not to_import_data['amount']:
+                        to_import_data['amount'] = abs(float(to_import_data['amount_debit']))
+                    if to_import_data['amount_credit'] and not to_import_data['amount']:
+                        to_import_data['amount'] = abs(float(to_import_data['amount_credit']))
+
+                    del(to_import_data['amount_debit'])
+                    del(to_import_data['amount_credit'])
+
+                    # save the row
+                    to_import_data['owner'] = request.user
+                    transaction_import_pending = models.TransactionImportPending(**to_import_data)
+                    transaction_import_pending.save()
+        except csv.Error as e:
+            messages.add_message(request, messages.ERROR, 'Sorry, we could not read that file. Please delete it try another format')
+            return render(request, 'website/transactions_bank_statement_import.html')
+        except ValueError as e:
+            messages.add_message(request, messages.ERROR, e.message)
+            return render(request, 'website/transactions_bank_statement_import.html')
+
+    # delete the bank statement file and redirect to review
+    request.user.profile.bank_statement_delete()
+    return HttpResponseRedirect(reverse('transactions_bank_statement_review'))
+
+@login_required
+def transactions_bank_statement_review(request):
+    """ Allow the user to change the data in the transactions before importing """
+
+    def class_gen_with_kwarg(cls, **additionalkwargs):
+        """
+        class generator for subclasses with additional 'stored' parameters (in a closure)
+        This is required to use a modelformset_factory with a form that needs additional 
+        initialization parameters (see http://stackoverflow.com/questions/622982/django-passing-custom-form-parameters-to-formset)
+        """
+        class ClassWithKwargs(cls):
+            def __init__(self, *args, **kwargs):
+                kwargs.update(additionalkwargs)
+                super(ClassWithKwargs, self).__init__(*args, **kwargs)
+        return ClassWithKwargs
+
+    # create the formset
+    pending_imports = models.TransactionImportPending.objects.filter(owner=request.user)
+    TransactionImportPendingFormset = modelformset_factory(models.TransactionImportPending, \
+                                        form=class_gen_with_kwarg(forms.TransactionImportPendingForm, request=request), \
+                                        fields=['date', 'amount', 'description', 'tenancy', 'building', 'person', 'category'],\
+                                        extra=0)
+
+    if request.method == 'POST':
+        # save the user's changes
+        formset = TransactionImportPendingFormset(request.POST)
+        if formset.is_valid():
+            formset.save()
+
+            # convert transaction import pending to transactions
+            if request.POST.get('import', False) != False:
+                for record_data in formset.cleaned_data:
+                    record_id = record_data.pop('id').id
+                    record_data['owner'] = request.user
+                    transaction = models.Transaction(**record_data)
+                    transaction.save()
+                    models.TransactionImportPending.objects.filter(owner=request.user, id=record_id).delete()
+
+                # redirect to transactions
+                return HttpResponseRedirect(reverse('transactions'))
+        return render(request, 'website/transactions_bank_statement_review.html', {'formset': formset})
+    else:
+        # redirect to upload if no pending imports
+        if not pending_imports:
+            return HttpResponseRedirect(reverse('transactions_bank_statement_upload'))
+
+        # show the unbound formset with all their pending imports
+        formset = TransactionImportPendingFormset(queryset=pending_imports)
+        return render(request, 'website/transactions_bank_statement_review.html', {'formset': formset})
+
+@login_required
+def transactions_bank_statement_delete(request):
+    if request.user.profile.bank_statement_file_exists:
+        request.user.profile.bank_statement_delete()
+    return HttpResponseRedirect(reverse('transactions_bank_statement_upload'))
+
 # users
 def user_new(request):
     if request.method == 'POST':
-        form = forms.UserForm(request, request.POST)
+        form = forms.UserForm(request.POST)
         if form.is_valid():
             user = form.save()
             return HttpResponseRedirect(reverse('user_login'))
         else:
             return render(request, 'website/user_new.html', {'form': form})
     else:
-        form = forms.UserForm(request)
+        form = forms.UserForm()
     return render(request, 'website/user_new.html', {'form': form})
 
 def user_get_premium(request):

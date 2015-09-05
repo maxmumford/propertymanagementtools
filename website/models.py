@@ -2,13 +2,14 @@ import calendar
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from decimal import *
-
-from django.conf import settings
+import os
 
 # set decimal arithmatic context
 context = getcontext()
 context.rounding=ROUND_HALF_UP
 
+from django.conf import settings
+from django.db.models.signals import post_save
 from django.db import models
 from django.contrib.auth.models import User
 from fields import DatePickerField
@@ -20,11 +21,31 @@ TITLE_CHOICES = (
     ('MRS', 'Mrs.'),
     ('MS', 'Ms.'),
 )
-som
+
 def currency(view_function):
     def _wrapped_currency(request, *args, **kwargs): 
         return round(view_function(request, *args, **kwargs), 2)
     return _wrapped_currency
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    @property
+    def bank_statement_file_path(self):
+        return os.path.join(settings.BANK_STATEMENT_DIRECTORY, str(self.id) + '.csv')
+
+    @property
+    def bank_statement_file_exists(self):
+        return os.path.isfile(self.bank_statement_file_path)
+
+    def bank_statement_save(self, bank_statement):
+        destination = open(self.bank_statement_file_path, 'wb+')
+        for chunk in bank_statement.chunks():
+            destination.write(chunk)
+        destination.close()
+
+    def bank_statement_delete(self):
+        os.remove(self.bank_statement_file_path)
 
 class Building(models.Model):
     owner = models.ForeignKey(User, blank=False)
@@ -352,14 +373,41 @@ class TransactionCategory(models.Model):
         return sum([Decimal(str(transaction.amount)) for transaction in self.transaction_set.filter(owner=user).all()])
 
 class Transaction(models.Model):
-    owner = models.ForeignKey(User, blank=False)
-    date = DatePickerField(blank=False)
-    amount = models.FloatField(blank=False)
-    building = models.ForeignKey(Building, blank=False)
-    tenancy = models.ForeignKey(Tenancy)
-    person = models.ForeignKey(Person)
-    category = models.ForeignKey(TransactionCategory)
+    # required
+    owner = models.ForeignKey(User, blank=False, null=False)
+    date = DatePickerField(blank=False, null=False)
+    amount = models.FloatField(blank=False, null=False)
+    category = models.ForeignKey(TransactionCategory, blank=False, null=False)
+    building = models.ForeignKey(Building, blank=False, null=False)
+    
+    # optional
+    tenancy = models.ForeignKey(Tenancy, blank=True, null=True)
+    person = models.ForeignKey(Person, blank=True, null=True)
     description = models.CharField(max_length=120)
 
     def __str__(self):
         return str(self.amount)
+
+class TransactionImportPending(models.Model):
+    """ 
+    Store transactions during an import before moving to normal Transaction table 
+    TODO: Find better solution than having another model. Current solution is perferable
+          to adding an "import" field to the Transaction model because it 
+          would be easily forgotten during queries...
+    """
+    owner = models.ForeignKey(User, blank=False)
+    date = DatePickerField(blank=False)
+    amount = models.FloatField(blank=False)
+    category = models.ForeignKey(TransactionCategory, blank=False, null=True)
+    building = models.ForeignKey(Building, blank=False, null=True)
+    tenancy = models.ForeignKey(Tenancy, null=True, blank=True)
+    person = models.ForeignKey(Person, null=True, blank=True)
+    description = models.CharField(max_length=120, null=True, blank=True)
+
+# signals
+def create_profile(sender, **kwargs):
+    user = kwargs["instance"]
+    if kwargs["created"]:
+        profile = Profile(user=user)
+        profile.save()
+post_save.connect(create_profile, sender=User)

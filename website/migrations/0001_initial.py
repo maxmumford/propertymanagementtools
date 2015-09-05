@@ -13,6 +13,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Profile',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Building',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -69,9 +76,22 @@ class Migration(migrations.Migration):
             name='Transaction',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('date', website.fields.DatePickerField(blank=False, null=False)),
+                ('amount', models.FloatField(blank=False, null=False)),
+                ('description', models.CharField(max_length=120, blank=True, null=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='TransactionImportPending',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('date', website.fields.DatePickerField()),
                 ('amount', models.FloatField()),
-                ('description', models.CharField(max_length=120)),
+                ('description', models.CharField(max_length=120, blank=True, null=True)),
+                ('building', models.ForeignKey(to='website.Building', blank=False, null=True)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True, blank=True)),
+                ('person', models.ForeignKey(to='website.Person', null=True, blank=True)),
+                ('tenancy', models.ForeignKey(to='website.Tenancy', null=True, blank=True)),
             ],
         ),
         migrations.CreateModel(
@@ -89,14 +109,19 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(to='website.TransactionCategory'),
         ),
         migrations.AddField(
+            model_name='transactionimportpending',
+            name='category',
+            field=models.ForeignKey(to='website.TransactionCategory', blank=False, null=True),
+        ),
+        migrations.AddField(
             model_name='transaction',
             name='building',
-            field=models.ForeignKey(to='website.Building'),
+            field=models.ForeignKey(to='website.Building', blank=False, null=False),
         ),
         migrations.AddField(
             model_name='transaction',
             name='tenancy',
-            field=models.ForeignKey(to='website.Tenancy'),
+            field=models.ForeignKey(to='website.Tenancy', blank=True, null=True),
         ),
         migrations.AddField(
             model_name='rentprice',
@@ -126,12 +151,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='transaction',
             name='owner',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=False, null=False),
         ),
         migrations.AddField(
             model_name='transaction',
             name='person',
-            field=models.ForeignKey(default='', to='website.Person'),
+            field=models.ForeignKey(to='website.Person', blank=True, null=True),
             preserve_default=False,
         ),
         migrations.AlterField(
@@ -142,6 +167,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tenancy',
             name='building',
-            field=models.ForeignKey(to='website.Building'),
+            field=models.ForeignKey(to='website.Building', blank=False, null=False),
         ),
     ]

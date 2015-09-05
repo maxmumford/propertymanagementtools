@@ -23,6 +23,16 @@ body {
   text-align: center;
 }
 
+/* forms */
+select {
+    max-width: 100%;
+}
+
+.delete_ajax {
+    cursor: hand;
+    cursor: pointer;
+}
+
 /* select2 */
 .select2-search, .select2-search input, .select2-results { 
 	background-color: #e3e3e3; 
@@ -133,3 +143,12 @@ footer {
   padding-top: 15px;
   padding-bottom: 15px;
 }
+
+/* 
+ * helper
+ * ----------------------------------------------
+ */
+ .nowrap { 
+    white-space: nowrap;
+ }
+ 

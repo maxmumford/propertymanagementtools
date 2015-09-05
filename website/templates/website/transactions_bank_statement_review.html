@@ -1,0 +1,55 @@
+{% extends "website/base.html" %}
+{% load staticfiles %}
+{% block js %}
+    {% load static %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'js/bank_statement_review.js' %}"></script>
+{% endblock %}
+{% load bootstrap3 %}
+{% block content %}
+    <form action="{% url 'transactions_bank_statement_review' %}" method="post" class="form">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table class="table">
+        <thead class="row">
+            <tr>
+                <th></th>
+                <th class="nowrap">Date</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Tenancy</th>
+                <th>Building</th>
+                <th>Person</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for form in formset %}
+            <tr>
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+                <td>
+                    <a href="{% url 'transaction_import_pending_delete'%}?id={{ form.id.value }}">
+                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                    </a>
+                </td>
+                <td class="nowrap">{{ form.date.value }}<span style="display:none">{{ form.date }}</span></td>
+                <td>{{ form.amount.value }}<span style="display:none">{{ form.amount }}</span></td>
+                <td>{% bootstrap_field form.description show_label=False %}</td>
+                <td>{% bootstrap_field form.category show_label=False %}</td>
+                <td>{% bootstrap_field form.tenancy show_label=False %}</td>
+                <td>{% bootstrap_field form.building show_label=False %}</td>
+                <td>{% bootstrap_field form.person show_label=False %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <input type="checkbox" name="import" id="import"> <label for="import">Import my data</label>
+    {% buttons %}
+    <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "star" %} Save Changes
+    </button>
+    {% endbuttons %}
+    </form>
+{% endblock %}
