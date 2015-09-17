@@ -1,18 +1,20 @@
 # Prerequisites
-* django: easy_install django
-* bower: npm install -g bower
-* django-bower: pip install django-bower
-* mysqldb: apt-get install python2.7-mysqldb
-* python-dateutil: apt-get install python-dateutil
+* pip install django
+* npm install -g bower
+* pip install django-bower
+* sudo apt-get install python2.7-mysqldb
+* sudo apt-get install python-dateutil
 * sudo apt-get install python-simplejson
 * sudo pip install django-tables2
 * sudo pip install django-bootstrap3
 * sudo pip install eadred
+* sudo apt-get install nodejs
+* sudo ln -s /usr/bin/nodejs /usr/bin/node
 
 # Installation
-* copy propertymanagementtools/database.conf.sample to propertymanagementtools/database.conf and put in values for your db instance
-* generate sample data: ./manage.py generatedata
-* run the server: ./manage.py runserver 192.168.0.123:4567
+* cp propertymanagementtools/database.conf.sample propertymanagementtools/database.conf
+* vi propertymanagementtools/database.conf
+* ./manage.py bower install
+* ./manage.py generatedata
+* ./manage.py runserver 192.168.0.123:4567
 * log in to the superuser: username = superuser , password = superpass
-* install bower packages: ./manage.py bower install
-
